@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: temponovo-odoo-proxy
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ODOO_URL
+        value: https://temponovo.odoo.com
+      - key: ODOO_DB
+        value: cmcorpcl-temponovo-main-24490235
+      - key: ODOO_USER
+        value: natalia@temponovo.cl
+      - key: ODOO_PASS
+        sync: false   # se ingresa manualmente en Render (no queda en el repo)
