@@ -30,7 +30,7 @@ header{background:#fff;border-bottom:3px solid var(--teal);padding:0 1.5rem;heig
 /* LAYOUT */
 .page{max-width:740px;margin:0 auto;padding:1.75rem 1rem 4rem;display:flex;flex-direction:column;gap:1.1rem}
 /* CARD */
-.card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;overflow:visible;box-shadow:var(--sh)}
 .ch{padding:.85rem 1.2rem;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;background:var(--sur2)}
 .ct{font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:.5rem}
 .ct::before{content:'';width:3px;height:13px;background:var(--teal);border-radius:2px}
@@ -93,7 +93,7 @@ header{background:#fff;border-bottom:3px solid var(--teal);padding:0 1.5rem;heig
 @keyframes spin{to{transform:rotate(360deg)}}
 .proc-title{font-weight:700;font-size:.95rem;margin-bottom:.35rem}.proc-sub{color:var(--ink3);font-size:.82rem}
 /* TABLE */
-.tscroll{overflow-x:auto}
+.tscroll{overflow-x:auto;border-radius:0 0 12px 12px}
 table{width:100%;border-collapse:collapse;font-size:.82rem}
 thead th{background:var(--sur2);padding:.58rem .8rem;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);border-bottom:1px solid var(--bor2);white-space:nowrap}
 thead th:first-child{border-left:3px solid var(--teal)}
