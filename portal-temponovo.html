@@ -3,472 +3,797 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temponovo · Ingresar Pedido</title>
-<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Temponovo · Pedidos</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root{--bg:#f7f6f3;--white:#ffffff;--ink:#18181b;--ink2:#52525b;--ink3:#a1a1aa;--border:#e4e4e7;--accent:#dc4f00;--accent-bg:#fff4f0;--accent-border:#fecdbb;--green:#16a34a;--green-bg:#f0fdf4;--yellow:#b45309;--yellow-bg:#fffbeb;--red:#dc2626;--red-bg:#fef2f2;--blue:#2563eb;--blue-bg:#eff6ff;--radius:10px;--shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);--shadow-md:0 4px 16px rgba(0,0,0,.08)}
+:root{
+  --bg:#0f1117;--sur:#181c25;--sur2:#1e2330;--bor:#262d3d;--bor2:#2e3750;
+  --teal:#00a896;--teal-bg:rgba(0,168,150,.09);--teal-bd:rgba(0,168,150,.28);
+  --ink:#e8edf5;--ink2:#8892a8;--ink3:#4a5568;
+  --green:#22c55e;--green-bg:rgba(34,197,94,.09);
+  --yel:#f59e0b;--yel-bg:rgba(245,158,11,.09);
+  --red:#ef4444;--red-bg:rgba(239,68,68,.09);
+  --blue:#3b82f6;--blue-bg:rgba(59,130,246,.09);
+  --r:8px;--sh:0 2px 8px rgba(0,0,0,.3);--shm:0 4px 20px rgba(0,0,0,.5);
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Figtree',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5}
-header{background:var(--ink);color:white;padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
-.logo{font-weight:800;font-size:1rem;letter-spacing:-0.02em}
-.logo em{color:#dc4f00;font-style:normal}
-.status-pill{display:flex;align-items:center;gap:6px;font-size:.72rem;color:rgba(255,255,255,.45);background:rgba(255,255,255,.07);border-radius:100px;padding:4px 10px;transition:all .3s}
-.status-pill .dot{width:6px;height:6px;border-radius:50%;background:#52525b;transition:all .3s}
-.status-pill.ok{color:#4ade80}.status-pill.ok .dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
-.page{max-width:760px;margin:0 auto;padding:2rem 1rem 4rem;display:flex;flex-direction:column;gap:1.25rem}
-.card{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
-.card-header{padding:1rem 1.25rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.card-title{font-weight:700;font-size:.9rem;color:var(--ink);display:flex;align-items:center;gap:.5rem}
-.card-body{padding:1.25rem}
-.setup-row{display:flex;gap:.75rem;align-items:flex-end}
-.field{display:flex;flex-direction:column;gap:.3rem;flex:1}
-.field label{font-size:.72rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
-.field input{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:.6rem .85rem;font-family:'Figtree',sans-serif;font-size:.88rem;color:var(--ink);outline:none;transition:border-color .15s;width:100%}
-.field input:focus{border-color:var(--accent)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border-radius:var(--radius);font-family:'Figtree',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;transition:all .15s;white-space:nowrap;border:none;padding:.6rem 1.1rem}
-.btn-dark{background:var(--ink);color:white}.btn-dark:hover{background:#27272a}.btn-dark:disabled{opacity:.4;cursor:not-allowed}
-.btn-accent{background:var(--accent);color:white;box-shadow:0 2px 8px rgba(220,79,0,.25)}.btn-accent:hover{background:#c44300}.btn-accent:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
-.btn-green{background:var(--green);color:white;box-shadow:0 2px 8px rgba(22,163,74,.2)}.btn-green:hover{background:#15803d}
-.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink2)}.btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
-.steps{display:flex;gap:0;background:var(--bg);border-radius:10px;padding:4px}
-.step{flex:1;text-align:center;padding:.5rem;font-size:.78rem;font-weight:600;color:var(--ink3);border-radius:7px;transition:all .2s}
-.step.active{background:var(--white);color:var(--ink);box-shadow:var(--shadow)}
-.step.done{color:var(--green)}
-.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
-.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--accent-bg)}
-.upload-zone.has-file{border-style:solid;border-color:var(--accent);background:var(--accent-bg);padding:1.25rem 1.5rem}
-.upload-icon{font-size:2rem;margin-bottom:.5rem}.upload-title{font-weight:700;font-size:.95rem;margin-bottom:.25rem}.upload-hint{color:var(--ink3);font-size:.8rem}
-.file-preview{display:flex;align-items:center;gap:.75rem}
-.file-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0}
-.file-thumb.excel-thumb{background:var(--green-bg);border-color:#bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
-.file-info{flex:1;text-align:left}.file-name{font-weight:600;font-size:.85rem}.file-size{color:var(--ink3);font-size:.75rem}
-.btn-remove{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:1rem;padding:4px;border-radius:6px;transition:all .15s}.btn-remove:hover{color:var(--red);background:var(--red-bg)}
-input[type=file]{display:none}
-.client-search-wrap{position:relative}
-.client-search-wrap input{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:.6rem .85rem;font-family:'Figtree',sans-serif;font-size:.88rem;color:var(--ink);outline:none;width:100%;transition:border-color .15s}
-.client-search-wrap input:focus{border-color:var(--accent)}
-.client-selected{display:flex;align-items:center;justify-content:space-between;background:var(--green-bg);border:1.5px solid #bbf7d0;border-radius:var(--radius);padding:.6rem .85rem}
-.client-selected-name{font-weight:600;color:var(--green);font-size:.9rem}
-.dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);z-index:100;max-height:240px;overflow-y:auto;display:none}
+body{font-family:'Figtree',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px}
+/* HEADER */
+header{background:#0a0d12;border-bottom:3px solid var(--teal);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 20px rgba(0,0,0,.5)}
+.logo{display:flex;align-items:center;gap:.55rem;font-weight:800;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:#fff}
+.logo-ring{width:30px;height:30px;border:2px solid var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--teal);flex-shrink:0}
+.logo em{color:var(--teal);font-style:normal}
+.logo span{color:var(--ink3);font-weight:400;font-size:.68rem;margin-left:.2rem;letter-spacing:.03em}
+.pill{display:flex;align-items:center;gap:6px;font-size:.7rem;color:var(--ink3);background:var(--sur);border:1px solid var(--bor);border-radius:100px;padding:4px 11px;transition:all .3s}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:var(--ink3);flex-shrink:0;transition:all .3s}
+.pill.ok{color:var(--teal);border-color:var(--teal-bd)}.pill.ok .dot{background:var(--teal);box-shadow:0 0 6px var(--teal)}
+/* LAYOUT */
+.page{max-width:740px;margin:0 auto;padding:1.75rem 1rem 4rem;display:flex;flex-direction:column;gap:1.1rem}
+/* CARD */
+.card{background:var(--sur);border:1px solid var(--bor);border-radius:12px;overflow:hidden;box-shadow:var(--sh)}
+.ch{padding:.85rem 1.2rem;border-bottom:1px solid var(--bor);display:flex;align-items:center;justify-content:space-between;background:var(--sur2)}
+.ct{font-weight:700;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;gap:.5rem}
+.ct::before{content:'';width:3px;height:13px;background:var(--teal);border-radius:2px}
+.cb{padding:1.2rem}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.35rem;border-radius:var(--r);font-family:'Figtree',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;transition:all .15s;white-space:nowrap;border:none;padding:.6rem 1.1rem;letter-spacing:.03em;text-transform:uppercase}
+.btn-teal{background:var(--teal);color:#0a0d12;box-shadow:0 2px 10px rgba(0,168,150,.3)}.btn-teal:hover{background:#00bfaa}.btn-teal:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn-dark{background:var(--sur2);color:var(--ink);border:1px solid var(--bor2)}.btn-dark:hover{border-color:var(--teal);color:var(--teal)}.btn-dark:disabled{opacity:.35;cursor:not-allowed}
+.btn-green{background:var(--green);color:#0a0d12;box-shadow:0 2px 10px rgba(34,197,94,.25)}.btn-green:hover{background:#16a34a}
+.btn-ghost{background:transparent;border:1px solid var(--bor2);color:var(--ink2)}.btn-ghost:hover{border-color:var(--teal);color:var(--teal)}
+/* STEPS */
+.steps{display:flex;background:var(--sur);border:1px solid var(--bor);border-radius:10px;padding:4px;gap:0}
+.stp{flex:1;text-align:center;padding:.45rem;font-size:.68rem;font-weight:700;color:var(--ink3);border-radius:6px;transition:all .2s;text-transform:uppercase;letter-spacing:.04em;cursor:default}
+.stp.active{background:var(--teal);color:#0a0d12}.stp.done{color:var(--teal)}
+/* FIELD */
+.field{display:flex;flex-direction:column;gap:.3rem}
+.field label,.flabel{font-size:.68rem;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.07em}
+.finput{background:var(--bg);border:1.5px solid var(--bor2);border-radius:var(--r);padding:.62rem .85rem;font-family:'Figtree',sans-serif;font-size:.87rem;color:var(--ink);outline:none;width:100%;transition:all .15s}
+.finput:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,168,150,.1)}
+.finput::placeholder{color:var(--ink3)}
+/* UPLOAD ZONE */
+.uzone{border:2px dashed var(--bor2);border-radius:10px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg);padding:1.5rem}
+.uzone:hover,.uzone.over{border-color:var(--teal);background:var(--teal-bg)}
+.uzone.filled{border-style:solid;border-color:var(--teal);background:var(--teal-bg);cursor:default}
+.uico{font-size:1.7rem;margin-bottom:.35rem}.utit{font-weight:700;font-size:.88rem;margin-bottom:.15rem}.uhint{color:var(--ink3);font-size:.73rem}
+/* PHOTO GRID */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:.5rem}
+.pthumb-wrap{position:relative}
+.pthumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;border:1px solid var(--bor2)}
+.pdel{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border:none;border-radius:50%;width:17px;height:17px;font-size:.6rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.add-more{border:2px dashed var(--bor2);border-radius:6px;width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--ink3);cursor:pointer;transition:all .15s;background:transparent}
+.add-more:hover{border-color:var(--teal);color:var(--teal)}
+/* EXCEL PREVIEW */
+.excel-prev{display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;background:var(--bg);border:1.5px solid var(--teal-bd);border-radius:var(--r)}
+.excel-icon{width:42px;height:42px;background:var(--green-bg);border:1px solid rgba(34,197,94,.3);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+/* TEXTAREA */
+.ta{background:var(--bg);border:1.5px solid var(--bor2);border-radius:var(--r);padding:.7rem .85rem;font-family:monospace;font-size:.74rem;color:var(--ink2);outline:none;resize:vertical;min-height:90px;width:100%;transition:all .15s;line-height:1.6}
+.ta:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,168,150,.1);color:var(--ink)}
+.ta.filled{border-color:var(--teal);color:var(--ink)}
+.ta::placeholder{color:var(--ink3)}
+/* OR DIVIDER */
+.or{display:flex;align-items:center;gap:.65rem;color:var(--ink3);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.or::before,.or::after{content:'';flex:1;height:1px;background:var(--bor)}
+/* CLIENT SEARCH */
+.dd-wrap{position:relative}
+.dd-wrap input{background:var(--bg);border:1.5px solid var(--bor2);border-radius:var(--r);padding:.62rem .85rem;font-family:'Figtree',sans-serif;font-size:.87rem;color:var(--ink);outline:none;width:100%;transition:all .15s}
+.dd-wrap input:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(0,168,150,.1)}
+.dd-wrap input::placeholder{color:var(--ink3)}
+.selected-client{display:flex;align-items:center;justify-content:space-between;background:var(--teal-bg);border:1.5px solid var(--teal-bd);border-radius:var(--r);padding:.62rem .85rem}
+.sel-name{font-weight:700;color:var(--teal);font-size:.88rem}
+.dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--sur2);border:1px solid var(--bor2);border-radius:10px;box-shadow:var(--shm);z-index:100;max-height:260px;overflow-y:auto;display:none}
 .dropdown.open{display:block}
-.dd-item{padding:.6rem .85rem;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border)}.dd-item:last-child{border-bottom:none}.dd-item:hover{background:var(--accent-bg)}
-.dd-name{font-weight:600;font-size:.85rem}.dd-ref{color:var(--ink3);font-size:.72rem}
-.dd-empty{padding:1rem;text-align:center;color:var(--ink3);font-size:.82rem}
-.processing-card{text-align:center;padding:2.5rem 1.5rem}
-.processing-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+.ddi{padding:.58rem .85rem;cursor:pointer;border-bottom:1px solid var(--bor);transition:background .1s}
+.ddi:last-child{border-bottom:none}.ddi:hover{background:var(--teal-bg)}
+.ddi-name{font-weight:600;font-size:.84rem;color:var(--ink)}.ddi-ref{color:var(--ink3);font-size:.7rem}
+.dd-empty{padding:1rem;text-align:center;color:var(--ink3);font-size:.8rem}
+/* PROCESSING */
+.proc{text-align:center;padding:2.5rem 1.5rem}
+.spinner{width:42px;height:42px;border:3px solid var(--bor2);border-top-color:var(--teal);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
 @keyframes spin{to{transform:rotate(360deg)}}
-.processing-title{font-weight:700;font-size:1rem;margin-bottom:.4rem}.processing-sub{color:var(--ink3);font-size:.85rem}
-.table-scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.83rem}
-thead th{background:var(--bg);padding:.55rem .85rem;text-align:left;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);border-bottom:1px solid var(--border);white-space:nowrap}
-tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+.proc-title{font-weight:700;font-size:.95rem;margin-bottom:.35rem}.proc-sub{color:var(--ink3);font-size:.82rem}
+/* TABLE */
+.tscroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:var(--sur2);padding:.58rem .8rem;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);border-bottom:1px solid var(--bor2);white-space:nowrap}
+thead th:first-child{border-left:3px solid var(--teal)}
+tbody tr{border-bottom:1px solid var(--bor);transition:background .1s}
 tbody tr:last-child{border-bottom:none}
-tbody tr:hover{background:#fafaf9}
-tbody tr.rejected{opacity:.35;background:var(--red-bg)}
-tbody tr.rejected td{text-decoration:line-through}
-tbody td{padding:.5rem .85rem;vertical-align:middle}
-.prod-wrap{position:relative}
-.prod-input{font-family:'Figtree',monospace;font-weight:700;font-size:.8rem;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.35rem .55rem;width:140px;outline:none;transition:all .15s;color:var(--ink)}
-.prod-input:focus{border-color:var(--blue);background:var(--blue-bg)}
-.prod-input.ok{border-color:var(--green);background:var(--green-bg);color:var(--green)}
-.prod-input.warn{border-color:#f59e0b;background:var(--yellow-bg);color:var(--yellow)}
-.prod-input.err{border-color:var(--red);background:var(--red-bg);color:var(--red)}
-.prod-dropdown{position:absolute;top:calc(100% + 3px);left:0;background:var(--white);border:1px solid var(--border);border-radius:9px;box-shadow:var(--shadow-md);z-index:200;max-height:200px;overflow-y:auto;min-width:280px;display:none}
-.prod-dropdown.open{display:block}
-.pd-item{padding:.5rem .75rem;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}.pd-item:last-child{border-bottom:none}.pd-item:hover{background:var(--accent-bg)}
-.pd-code{font-weight:700;font-size:.75rem;color:var(--blue);font-family:monospace}.pd-name{font-size:.73rem;color:var(--ink2)}
-.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:.67rem;font-weight:700;white-space:nowrap}
-.badge-ok{background:var(--green-bg);color:var(--green);border:1px solid #bbf7d0}
-.badge-med{background:var(--yellow-bg);color:var(--yellow);border:1px solid #fde68a}
-.badge-low{background:var(--red-bg);color:var(--red);border:1px solid #fecaca}
-.qty-input{width:60px;text-align:right;font-weight:700;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.3rem .5rem;font-family:'Figtree',sans-serif;font-size:.85rem;outline:none;transition:border-color .15s}
-.qty-input:focus{border-color:var(--accent)}
-.btn-row-action{background:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:.72rem;font-family:'Figtree',sans-serif;cursor:pointer;transition:all .15s;color:var(--ink2);font-weight:600}
-.btn-row-action.del{color:var(--red);border-color:#fecaca}.btn-row-action.del:hover{background:var(--red-bg)}
-.btn-row-action.restore{color:var(--green);border-color:#bbf7d0}.btn-row-action.restore:hover{background:var(--green-bg)}
-.summary-row{display:flex;gap:.75rem;flex-wrap:wrap}
-.sum-pill{flex:1;min-width:80px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;text-align:center}
-.sum-val{font-size:1.5rem;font-weight:800;line-height:1}.sum-label{font-size:.7rem;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
-.sum-val.ok{color:var(--green)}.sum-val.warn{color:var(--yellow)}.sum-val.bad{color:var(--red)}
-.actions-row{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:space-between;align-items:center}
-.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:white;border-radius:10px;padding:.75rem 1.1rem;font-size:.85rem;font-weight:500;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);box-shadow:var(--shadow-md)}
+tbody tr:hover{background:rgba(0,168,150,.04)}
+tbody tr.rej{opacity:.3;background:var(--red-bg)}
+tbody tr.rej td{text-decoration:line-through}
+td{padding:.5rem .8rem;vertical-align:middle}
+.pw{position:relative}
+.pi{font-family:monospace;font-weight:700;font-size:.78rem;background:var(--bg);border:1.5px solid var(--bor2);border-radius:6px;padding:.32rem .5rem;width:142px;outline:none;transition:all .15s;color:var(--ink)}
+.pi:focus{border-color:var(--blue);background:var(--blue-bg)}
+.pi.ok{border-color:var(--teal);background:var(--teal-bg);color:var(--teal)}
+.pi.warn{border-color:var(--yel);background:var(--yel-bg);color:var(--yel)}
+.pi.err{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.pdd{position:absolute;top:calc(100% + 3px);left:0;background:var(--sur2);border:1px solid var(--bor2);border-radius:8px;box-shadow:var(--shm);z-index:200;max-height:190px;overflow-y:auto;min-width:275px;display:none}
+.pdd.open{display:block}
+.pdi{padding:.45rem .72rem;cursor:pointer;border-bottom:1px solid var(--bor);transition:background .1s}
+.pdi:last-child{border-bottom:none}.pdi:hover{background:var(--teal-bg)}
+.pdi-code{font-weight:700;font-size:.73rem;color:var(--teal);font-family:monospace}.pdi-name{font-size:.7rem;color:var(--ink2)}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:100px;font-size:.63rem;font-weight:700}
+.b-ok{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-bd)}
+.b-med{background:var(--yel-bg);color:var(--yel);border:1px solid rgba(245,158,11,.3)}
+.b-low{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.qi{width:58px;text-align:right;font-weight:700;background:var(--bg);border:1.5px solid var(--bor2);border-radius:6px;padding:.28rem .45rem;font-family:'Figtree',sans-serif;font-size:.84rem;color:var(--ink);outline:none}
+.qi:focus{border-color:var(--teal)}
+.ra{background:none;border:1px solid var(--bor2);border-radius:5px;padding:2px 7px;font-size:.68rem;font-family:'Figtree',sans-serif;cursor:pointer;transition:all .15s;color:var(--ink3);font-weight:700}
+.ra.del{color:var(--red);border-color:rgba(239,68,68,.3)}.ra.del:hover{background:var(--red-bg)}
+.ra.res{color:var(--teal);border-color:var(--teal-bd)}.ra.res:hover{background:var(--teal-bg)}
+/* SUMMARY */
+.srow{display:flex;gap:.65rem}
+.sp{flex:1;background:var(--bg);border:1px solid var(--bor);border-radius:8px;padding:.65rem .9rem;text-align:center}
+.sv{font-size:1.4rem;font-weight:800;line-height:1}.sl{font-size:.63rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
+.sv.ok{color:var(--teal)}.sv.w{color:var(--yel)}.sv.b{color:var(--red)}
+/* CORRECTIONS TOAST */
+.corr-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(0,168,150,.15);border:1px solid var(--teal-bd);border-radius:6px;padding:3px 8px;font-size:.68rem;color:var(--teal);font-weight:600}
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--sur2);color:var(--ink);border:1px solid var(--bor2);border-radius:10px;padding:.7rem 1rem;font-size:.83rem;font-weight:500;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);box-shadow:var(--shm);max-width:300px}
 .toast.show{transform:none;opacity:1}
-.toast.ok{border-left:3px solid #4ade80}.toast.err{border-left:3px solid #f87171}.toast.warn{border-left:3px solid #fbbf24}
-@media(max-width:600px){.setup-row{flex-direction:column}}
+.toast.ok{border-left:3px solid var(--teal)}.toast.err{border-left:3px solid var(--red);color:var(--red)}.toast.warn{border-left:3px solid var(--yel)}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bor2);border-radius:99px}::-webkit-scrollbar-thumb:hover{background:var(--teal)}
+input[type=file]{display:none}
+@media(max-width:520px){.srow{flex-wrap:wrap}.sp{min-width:calc(50% - .35rem)}}
 </style>
 </head>
 <body>
 <header>
-  <div class="logo">Tempo<em>novo</em> · Pedidos</div>
-  <div class="status-pill" id="statusPill"><span class="dot"></span><span id="statusText">Cargando...</span></div>
+  <div class="logo">
+    <div class="logo-ring">⏱</div>
+    TEMPO<em>NOVO</em><span>· PEDIDOS</span>
+  </div>
+  <div class="pill" id="pill"><span class="dot"></span><span id="pillTxt">Cargando...</span></div>
 </header>
-<div class="page">
-  <!-- Setup -->
-  <div class="card" id="setupCard">
-    <div class="card-header"><div class="card-title">⚙️ Configuración del servidor</div><span style="font-size:.72rem;color:var(--ink3)">Solo la primera vez</span></div>
-    <div class="card-body">
-      <div class="setup-row">
-        <div class="field"><label>URL del proxy (Render)</label><input type="text" id="proxyUrl" placeholder="https://temponovo-odoo-proxy.onrender.com"></div>
-        <button class="btn btn-dark" onclick="initProxy()" id="btnInit">Conectar</button>
-      </div>
-    </div>
-  </div>
-  <!-- Steps -->
-  <div class="steps" id="stepsBar" style="display:none">
-    <div class="step active" id="step1">1 · Archivo</div>
-    <div class="step" id="step2">2 · Cliente</div>
-    <div class="step" id="step3">3 · Revisar</div>
-    <div class="step" id="step4">4 · Descargar</div>
-  </div>
-  <!-- Upload -->
-  <div class="card" id="cardUpload" style="display:none">
-    <div class="card-header"><div class="card-title">📁 Sube el pedido</div></div>
-    <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
-      <div class="upload-zone" id="zonePhoto" onclick="document.getElementById('inputPhoto').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event,'photo')">
-        <div id="zonePhotoContent"><div class="upload-icon">📸</div><div class="upload-title">Foto del pedido</div><div class="upload-hint">JPG, PNG, WEBP · arrastra o haz clic</div></div>
-      </div>
-      <input type="file" id="inputPhoto" accept="image/*" onchange="handleFile('photo',this)">
-      <div style="text-align:center;color:var(--ink3);font-size:.8rem;font-weight:600">— o —</div>
-      <div class="upload-zone" id="zoneExcel" onclick="document.getElementById('inputExcel').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event,'excel')">
-        <div id="zoneExcelContent"><div class="upload-icon">📊</div><div class="upload-title">Excel del pedido</div><div class="upload-hint">XLS, XLSX, CSV · arrastra o haz clic</div></div>
-      </div>
-      <input type="file" id="inputExcel" accept=".xls,.xlsx,.csv" onchange="handleFile('excel',this)">
-      <button class="btn btn-accent" id="btnProcess" onclick="processFile()" disabled style="margin-top:.5rem">⚡ Procesar con IA</button>
-    </div>
-  </div>
-  <!-- Processing -->
-  <div class="card" id="cardProcessing" style="display:none">
-    <div class="card-body">
-      <div class="processing-card">
-        <div class="processing-spinner"></div>
-        <div class="processing-title" id="processingTitle">Analizando el pedido...</div>
-        <div class="processing-sub" id="processingSub">La IA está leyendo el archivo y buscando los productos</div>
-      </div>
-    </div>
-  </div>
-  <!-- Client -->
-  <div class="card" id="cardClient" style="display:none">
-    <div class="card-header"><div class="card-title">👤 ¿De quién es este pedido?</div></div>
-    <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
-      <div id="clientSelectorWrap">
-        <div class="client-search-wrap" id="clientSearchWrap">
-          <input type="text" id="clientSearch" placeholder="Escribe el nombre del cliente..." oninput="searchClients(this.value)" onblur="setTimeout(()=>closeClientDd(),200)" autocomplete="off">
-          <div class="dropdown" id="clientDd"></div>
-        </div>
-      </div>
-      <button class="btn btn-accent" id="btnConfirmClient" onclick="confirmClient()" disabled>Confirmar cliente →</button>
-    </div>
-  </div>
-  <!-- Review -->
-  <div class="card" id="cardReview" style="display:none">
-    <div class="card-header">
-      <div class="card-title">✅ Revisar líneas del pedido</div>
-      <button class="btn btn-ghost" onclick="addEmptyRow()" style="padding:4px 10px;font-size:.78rem">+ Agregar</button>
-    </div>
-    <div class="card-body" style="padding:0">
-      <div class="table-scroll">
-        <table>
-          <thead><tr><th>#</th><th>Código</th><th>Nombre producto</th><th>Cant.</th><th>Confianza</th><th></th></tr></thead>
-          <tbody id="reviewBody"></tbody>
-        </table>
-      </div>
-    </div>
-    <div style="padding:1rem 1.25rem;border-top:1px solid var(--border)"><div class="summary-row" id="summaryRow"></div></div>
-    <div style="padding:0 1.25rem 1.25rem">
-      <div class="actions-row">
-        <button class="btn btn-ghost" onclick="clearRejected()">🗑 Limpiar rechazados</button>
-        <button class="btn btn-green" onclick="downloadExcel()">⬇ Descargar Excel para Odoo</button>
-      </div>
-    </div>
-  </div>
-  <!-- New order -->
-  <div id="newOrderBtn" style="display:none;text-align:center">
-    <button class="btn btn-dark" onclick="resetAll()">+ Ingresar nuevo pedido</button>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
-<script>
-let PROXY=localStorage.getItem('tn_proxy')||'';
-let catalog=[],customers=[],selectedClient=null,currentFile=null,currentFileType=null,rows=[];
 
-window.addEventListener('load',async()=>{
-  const saved=localStorage.getItem('tn_proxy');
-  if(saved){document.getElementById('proxyUrl').value=saved;await initProxy(true);}
-  else{setStatus('Ingresa la URL del proxy');}
+<div class="page">
+
+  <!-- SETUP -->
+  <div class="card" id="cardSetup">
+    <div class="ch"><div class="ct">⚙️ Configuración</div><span style="font-size:.7rem;color:var(--ink3)">Solo la primera vez</span></div>
+    <div class="cb">
+      <div style="display:flex;gap:.75rem;align-items:flex-end">
+        <div class="field" style="flex:1">
+          <label>URL del proxy (Render)</label>
+          <input class="finput" id="proxyUrl" type="text" placeholder="https://temponovo-odoo-proxy.onrender.com">
+        </div>
+        <button class="btn btn-dark" id="btnConnect" onclick="initProxy()">Conectar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps" id="stepsBar" style="display:none">
+    <div class="stp active" id="s1">1 · Archivo</div>
+    <div class="stp" id="s2">2 · Cliente</div>
+    <div class="stp" id="s3">3 · Revisar</div>
+    <div class="stp" id="s4">4 · Listo</div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="card" id="cardUpload" style="display:none">
+    <div class="ch">
+      <div class="ct">📁 Pedido</div>
+      <div id="corrBadge" style="display:none"></div>
+    </div>
+    <div class="cb" style="display:flex;flex-direction:column;gap:1rem">
+
+      <!-- FOTOS (múltiples) -->
+      <div>
+        <div class="flabel" style="margin-bottom:.4rem">📸 Fotos del pedido</div>
+        <div class="uzone" id="zPhoto" onclick="document.getElementById('iPhoto').click()"
+             ondragover="event.preventDefault();this.classList.add('over')"
+             ondragleave="this.classList.remove('over')"
+             ondrop="dropFiles(event)">
+          <div id="zPhotoInner">
+            <div class="uico">📸</div>
+            <div class="utit">Arrastra o haz clic para subir</div>
+            <div class="uhint">JPG, PNG, WEBP · puedes subir varias fotos</div>
+          </div>
+          <div class="photo-grid" id="photoGrid" style="display:none;margin-top:.75rem"></div>
+        </div>
+        <input type="file" id="iPhoto" accept="image/*" multiple onchange="addPhotos(this.files)">
+      </div>
+
+      <div class="or">o</div>
+
+      <!-- EXCEL -->
+      <div>
+        <div class="flabel" style="margin-bottom:.4rem">📊 Excel / CSV</div>
+        <div class="uzone" id="zExcel" onclick="document.getElementById('iExcel').click()"
+             ondragover="event.preventDefault();this.classList.add('over')"
+             ondragleave="this.classList.remove('over')"
+             ondrop="dropExcel(event)">
+          <div id="zExcelInner">
+            <div class="uico">📊</div>
+            <div class="utit">Arrastra o haz clic</div>
+            <div class="uhint">XLS, XLSX, CSV</div>
+          </div>
+        </div>
+        <input type="file" id="iExcel" accept=".xls,.xlsx,.csv" onchange="setExcel(this.files[0]);this.value=''">
+      </div>
+
+      <div class="or">o</div>
+
+      <!-- TEXTO LIBRE / TXT WEB / WHATSAPP -->
+      <div>
+        <div class="flabel" style="margin-bottom:.4rem">💬 Pegar texto — web, WhatsApp, email, cualquier formato</div>
+        <textarea class="ta" id="taText"
+          placeholder="Pega aquí cualquier texto con el pedido:
+
+• TXT de la web: FECHA;01/08/2025;...;CANT.;2;COD. TN;CS-A159WAN1D;...
+• WhatsApp: 'Hola necesito 2 F-91W y 3 A168WA'
+• Email: 'Estimados, adjunto pedido: cod F91W1U x5, AQ230...'
+• Cualquier formato — Claude lo interpreta"
+          oninput="onTaInput(this)"></textarea>
+      </div>
+
+      <button class="btn btn-teal" id="btnProcess" onclick="processAll()" disabled>⚡ Procesar</button>
+    </div>
+  </div>
+
+  <!-- PROCESSING -->
+  <div class="card" id="cardProc" style="display:none">
+    <div class="cb">
+      <div class="proc">
+        <div class="spinner"></div>
+        <div class="proc-title" id="procTitle">Procesando...</div>
+        <div class="proc-sub" id="procSub">Un momento</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENT -->
+  <div class="card" id="cardClient" style="display:none">
+    <div class="ch"><div class="ct">👤 Cliente</div></div>
+    <div class="cb" style="display:flex;flex-direction:column;gap:.85rem">
+      <div class="dd-wrap" id="ddWrap">
+        <input class="finput" id="clientInput" type="text" placeholder="Escribe para buscar cliente..."
+               oninput="filterClients(this.value)"
+               onblur="setTimeout(closeDD,180)"
+               autocomplete="off">
+        <div class="dropdown" id="clientDD"></div>
+      </div>
+      <button class="btn btn-teal" id="btnConfirm" onclick="confirmClient()" disabled>Confirmar →</button>
+    </div>
+  </div>
+
+  <!-- REVIEW -->
+  <div class="card" id="cardReview" style="display:none">
+    <div class="ch">
+      <div class="ct">✅ Revisar pedido</div>
+      <button class="btn btn-ghost" onclick="addRow()" style="padding:3px 9px;font-size:.72rem">+ Línea</button>
+    </div>
+    <div class="tscroll">
+      <table>
+        <thead><tr><th>#</th><th>Código</th><th>Producto</th><th>Cant.</th><th>Conf.</th><th></th></tr></thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+    <div style="padding:1rem 1.2rem;border-top:1px solid var(--bor)">
+      <div class="srow" id="sRow"></div>
+    </div>
+    <div style="padding:0 1.2rem 1.2rem;display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap">
+      <button class="btn btn-ghost" onclick="purgeRej()">🗑 Limpiar rechazados</button>
+      <button class="btn btn-green" onclick="downloadExcel()">⬇ Descargar Excel Odoo</button>
+    </div>
+  </div>
+
+  <!-- NEW ORDER -->
+  <div id="divNew" style="display:none;text-align:center">
+    <button class="btn btn-dark" onclick="resetAll()">+ Nuevo pedido</button>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ────────────────────────────────────────────────────────
+let PROXY = localStorage.getItem('tn_proxy') || '';
+let catalog = [];      // [{code, name}]
+let allCustomers = []; // [{id, name, ref}]
+let selClient = null;
+let photos = [];       // [{file, url}]
+let excelFile = null;
+let rows = [];         // order rows
+let corrections = JSON.parse(localStorage.getItem('tn_corrections') || '{}');
+// corrections = { "texto_original": "CODIGO_CORRECTO", ... }
+
+// ── INIT ─────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('tn_proxy');
+  if (saved) { document.getElementById('proxyUrl').value = saved; initProxy(true); }
+  updateCorrBadge();
 });
 
-async function initProxy(silent=false){
-  const url=document.getElementById('proxyUrl').value.trim().replace(/\/$/,'');
-  if(!url){toast('Ingresa la URL del proxy','err');return;}
-  PROXY=url;
-  const btn=document.getElementById('btnInit');
-  btn.textContent='Conectando...';btn.disabled=true;
-  try{
-    const h=await fetchJSON(PROXY+'/');
-    if(h.status!=='ok')throw new Error('Proxy no responde');
-    setStatus('Cargando catálogo...');
-    const cat=await fetchJSON(PROXY+'/catalog');
-    if(!cat.ok)throw new Error(cat.detail||'Error catálogo');
-    catalog=cat.products;
-    const cust=await fetchJSON(PROXY+'/customers');
-    if(cust.ok)customers=cust.customers;
-    localStorage.setItem('tn_proxy',PROXY);
-    setStatus(catalog.length+' productos · listo',true);
-    document.getElementById('setupCard').style.display='none';
-    document.getElementById('stepsBar').style.display='flex';
-    document.getElementById('cardUpload').style.display='block';
+async function initProxy(silent = false) {
+  const url = (document.getElementById('proxyUrl').value || '').trim().replace(/\/$/, '');
+  if (!url) { toast('Ingresa la URL del proxy', 'err'); return; }
+  PROXY = url;
+  const btn = document.getElementById('btnConnect');
+  btn.textContent = 'Conectando...'; btn.disabled = true;
+  try {
+    await fetchJ(PROXY + '/');
+    setPill('Cargando catálogo...');
+    const cat = await fetchJ(PROXY + '/catalog');
+    if (!cat.ok) throw new Error(cat.detail || 'Error catálogo');
+    catalog = cat.products;
+    setPill('Cargando clientes...');
+    const cust = await fetchJ(PROXY + '/customers?limit=2000');
+    if (cust.ok) allCustomers = cust.customers;
+    localStorage.setItem('tn_proxy', PROXY);
+    setPill(catalog.length + ' prod · ' + allCustomers.length + ' clientes', true);
+    document.getElementById('cardSetup').style.display = 'none';
+    document.getElementById('stepsBar').style.display = 'flex';
+    document.getElementById('cardUpload').style.display = 'block';
     setStep(1);
-    if(!silent)toast('Conectado · '+catalog.length+' productos ✓','ok');
-  }catch(e){setStatus('Error de conexión');toast(e.message,'err');}
-  btn.textContent='Conectar';btn.disabled=false;
+    if (!silent) toast('Conectado ✓', 'ok');
+  } catch(e) { setPill('Error'); toast(e.message, 'err'); }
+  btn.textContent = 'Conectar'; btn.disabled = false;
 }
 
-function handleDrop(e,type){
+// ── PHOTOS ───────────────────────────────────────────────────────
+function addPhotos(files) {
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) continue;
+    photos.push({ file: f, url: URL.createObjectURL(f) });
+  }
+  renderPhotos();
+  clearExcel(); clearTa();
+  checkReady();
+}
+
+function renderPhotos() {
+  const grid = document.getElementById('photoGrid');
+  const zone = document.getElementById('zPhoto');
+  const inner = document.getElementById('zPhotoInner');
+  if (!photos.length) {
+    grid.style.display = 'none'; grid.innerHTML = '';
+    zone.classList.remove('filled');
+    inner.style.display = '';
+    return;
+  }
+  inner.style.display = 'none';
+  grid.style.display = 'grid';
+  zone.classList.add('filled');
+  zone.onclick = null;
+  grid.innerHTML = photos.map((p,i) =>
+    `<div class="pthumb-wrap">
+      <img class="pthumb" src="${p.url}">
+      <button class="pdel" onclick="event.stopPropagation();removePhoto(${i})">✕</button>
+     </div>`
+  ).join('') +
+  `<div class="add-more" onclick="event.stopPropagation();document.getElementById('iPhoto').click()" title="Agregar más fotos">＋</div>`;
+}
+
+function removePhoto(i) {
+  URL.revokeObjectURL(photos[i].url);
+  photos.splice(i, 1);
+  renderPhotos();
+  checkReady();
+}
+
+function dropFiles(e) {
   e.preventDefault();
-  document.getElementById('zone'+cap(type)).classList.remove('dragover');
-  const f=e.dataTransfer.files[0];
-  if(f)setFile(type,f);
+  document.getElementById('zPhoto').classList.remove('over');
+  const imgs = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  if (imgs.length) addPhotos(imgs);
 }
 
-function handleFile(type,input){
-  const f=input.files[0];
-  if(f)setFile(type,f);
-  input.value='';
+// ── EXCEL ─────────────────────────────────────────────────────────
+function setExcel(f) {
+  if (!f) return;
+  excelFile = f;
+  clearPhotos(); clearTa();
+  const inner = document.getElementById('zExcelInner');
+  const zone  = document.getElementById('zExcel');
+  zone.classList.add('filled'); zone.onclick = null;
+  inner.innerHTML = `<div class="excel-prev">
+    <div class="excel-icon">📊</div>
+    <div style="flex:1"><div style="font-weight:600;font-size:.85rem">${esc(f.name)}</div><div style="color:var(--ink3);font-size:.72rem">${(f.size/1024).toFixed(0)} KB</div></div>
+    <button class="ra del" onclick="clearExcel()">✕</button>
+  </div>`;
+  checkReady();
 }
 
-function setFile(type,file){
-  if(type==='photo')clearFileZone('excel');else clearFileZone('photo');
-  currentFile=file;currentFileType=type;
-  const zone=document.getElementById('zone'+cap(type));
-  const content=document.getElementById('zone'+cap(type)+'Content');
-  zone.classList.add('has-file');zone.onclick=null;
-  if(type==='photo'){
-    const url=URL.createObjectURL(file);
-    content.innerHTML='<div class="file-preview"><img class="file-thumb" src="'+url+'"><div class="file-info"><div class="file-name">'+esc(file.name)+'</div><div class="file-size">'+(file.size/1024).toFixed(0)+' KB</div></div><button class="btn-remove" onclick="event.stopPropagation();clearFileZone(\'photo\')">✕</button></div>';
-  }else{
-    content.innerHTML='<div class="file-preview"><div class="file-thumb excel-thumb">📊</div><div class="file-info"><div class="file-name">'+esc(file.name)+'</div><div class="file-size">'+(file.size/1024).toFixed(0)+' KB</div></div><button class="btn-remove" onclick="event.stopPropagation();clearFileZone(\'excel\')">✕</button></div>';
-  }
-  document.getElementById('btnProcess').disabled=false;
+function clearExcel() {
+  excelFile = null;
+  const inner = document.getElementById('zExcelInner');
+  const zone  = document.getElementById('zExcel');
+  zone.classList.remove('filled');
+  zone.onclick = () => document.getElementById('iExcel').click();
+  inner.innerHTML = `<div class="uico">📊</div><div class="utit">Arrastra o haz clic</div><div class="uhint">XLS, XLSX, CSV</div>`;
+  checkReady();
 }
 
-function clearFileZone(type){
-  const zone=document.getElementById('zone'+cap(type));
-  const content=document.getElementById('zone'+cap(type)+'Content');
-  zone.classList.remove('has-file','dragover');
-  zone.onclick=()=>document.getElementById('input'+cap(type)).click();
-  if(type==='photo'){content.innerHTML='<div class="upload-icon">📸</div><div class="upload-title">Foto del pedido</div><div class="upload-hint">JPG, PNG, WEBP · arrastra o haz clic</div>';}
-  else{content.innerHTML='<div class="upload-icon">📊</div><div class="upload-title">Excel del pedido</div><div class="upload-hint">XLS, XLSX, CSV · arrastra o haz clic</div>';}
-  if(currentFileType===type){currentFile=null;currentFileType=null;document.getElementById('btnProcess').disabled=true;}
+function dropExcel(e) {
+  e.preventDefault();
+  document.getElementById('zExcel').classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) setExcel(f);
 }
 
-async function processFile(){
-  if(!currentFile)return;
-  document.getElementById('cardUpload').style.display='none';
-  document.getElementById('cardProcessing').style.display='block';
+// ── TEXTAREA ──────────────────────────────────────────────────────
+function onTaInput(ta) {
+  ta.classList.toggle('filled', ta.value.trim().length > 0);
+  if (ta.value.trim().length > 5) { clearPhotos(); clearExcel(); }
+  checkReady();
+}
+
+function clearTa() {
+  const ta = document.getElementById('taText');
+  ta.value = ''; ta.classList.remove('filled');
+}
+
+// ── CLEAR HELPERS ─────────────────────────────────────────────────
+function clearPhotos() {
+  photos.forEach(p => URL.revokeObjectURL(p.url));
+  photos = [];
+  renderPhotos();
+}
+
+// ── CHECK READY ───────────────────────────────────────────────────
+function checkReady() {
+  const hasTa = document.getElementById('taText').value.trim().length > 5;
+  const ready = photos.length > 0 || excelFile || hasTa;
+  document.getElementById('btnProcess').disabled = !ready;
+}
+
+// ── PROCESS ───────────────────────────────────────────────────────
+async function processAll() {
+  const taVal = document.getElementById('taText').value.trim();
+
+  document.getElementById('cardUpload').style.display = 'none';
+  document.getElementById('cardProc').style.display = 'block';
   setStep(2);
-  try{
-    let rawRows=[];
-    if(currentFileType==='photo'){
-      document.getElementById('processingTitle').textContent='Leyendo la foto...';
-      document.getElementById('processingSub').textContent='Claude está analizando la imagen y buscando los productos en el catálogo';
-      const fd=new FormData();
-      fd.append('file',currentFile);
-      fd.append('catalog_json',JSON.stringify(catalog));
-      const resp=await fetch(PROXY+'/process-image',{method:'POST',body:fd});
-      const data=await resp.json();
-      if(!data.ok)throw new Error(data.detail||'Error procesando imagen');
-      rawRows=data.rows;
-    }else{
-      document.getElementById('processingTitle').textContent='Leyendo el Excel...';
-      document.getElementById('processingSub').textContent='Claude está interpretando las columnas y mapeando los productos';
-      const text=await readExcelAsText(currentFile);
-      const resp=await fetch(PROXY+'/process-text',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,filename:currentFile.name,catalog_json:JSON.stringify(catalog)})});
-      const data=await resp.json();
-      if(!data.ok)throw new Error(data.detail||'Error procesando Excel');
-      rawRows=data.rows;
+
+  try {
+    let allRows = [];
+
+    // ── TXT web (formato semicolón) ──
+    if (taVal && /CANT\.;/.test(taVal)) {
+      setProc('Procesando TXT web...', 'Formato Temponovo detectado — instantáneo, sin IA');
+      const r = await post(PROXY + '/process-txt', { text: taVal, filename: 'web-paste.txt' });
+      if (!r.ok) throw new Error(r.detail);
+      allRows = r.rows;
+
+    // ── Texto libre (WhatsApp, email, etc.) ──
+    } else if (taVal) {
+      setProc('Interpretando texto...', 'Claude está leyendo el mensaje y buscando productos en el catálogo');
+      const corrCtx = buildCorrContext();
+      const r = await post(PROXY + '/process-text', { text: taVal, filename: 'texto-libre.txt', catalog_json: JSON.stringify(catalog), corrections_context: corrCtx });
+      if (!r.ok) throw new Error(r.detail);
+      allRows = r.rows;
+
+    // ── Fotos ──
+    } else if (photos.length > 0) {
+      const corrCtx = buildCorrContext();
+      for (let i = 0; i < photos.length; i++) {
+        setProc(`Analizando foto ${i+1} de ${photos.length}...`, 'Claude está leyendo la imagen y buscando productos en el catálogo');
+        const fd = new FormData();
+        fd.append('file', photos[i].file);
+        fd.append('catalog_json', JSON.stringify(catalog));
+        fd.append('corrections_context', corrCtx);
+        const r = await fetch(PROXY + '/process-image', { method: 'POST', body: fd }).then(x => x.json());
+        if (!r.ok) throw new Error(r.detail);
+        allRows = allRows.concat(r.rows);
+      }
+
+    // ── Excel ──
+    } else if (excelFile) {
+      setProc('Leyendo Excel...', 'Claude está interpretando las columnas y mapeando productos');
+      const text = await readExcelText(excelFile);
+      const r = await post(PROXY + '/process-text', { text, filename: excelFile.name, catalog_json: JSON.stringify(catalog), corrections_context: '' });
+      if (!r.ok) throw new Error(r.detail);
+      allRows = r.rows;
     }
-    rows=rawRows.map(r=>({...r,source:currentFileType,rejected:false,matchStatus:getMatchStatus(r.codigo,r.confidence)}));
-    const firstClient=rawRows.find(r=>r.cliente&&r.cliente.trim())?.cliente?.trim();
-    document.getElementById('cardProcessing').style.display='none';
-    showClientStep(firstClient);
-  }catch(e){
-    document.getElementById('cardProcessing').style.display='none';
-    document.getElementById('cardUpload').style.display='block';
-    toast('Error: '+e.message,'err');setStep(1);
+
+    rows = allRows.map(r => ({ ...r, rejected: false, ms: matchStatus(r.codigo, r.confidence), origCode: r.codigo }));
+
+    const sugClient = allRows.find(r => r.cliente?.trim())?.cliente?.trim() || '';
+    document.getElementById('cardProc').style.display = 'none';
+    showClientStep(sugClient);
+
+  } catch(e) {
+    document.getElementById('cardProc').style.display = 'none';
+    document.getElementById('cardUpload').style.display = 'block';
+    toast('Error: ' + e.message, 'err');
+    setStep(1);
   }
 }
 
-function showClientStep(suggested){
-  document.getElementById('cardClient').style.display='block';
+// ── CORRECTIONS CONTEXT ───────────────────────────────────────────
+function buildCorrContext() {
+  const entries = Object.entries(corrections);
+  if (!entries.length) return '';
+  const lines = entries.slice(-40).map(([orig, corr]) => `"${orig}" → ${corr}`);
+  return 'Correcciones previas de Natalia (úsalas como referencia):\n' + lines.join('\n');
+}
+
+function saveCorrection(origText, correctCode) {
+  if (!origText || !correctCode || origText === correctCode) return;
+  corrections[origText.toLowerCase().trim()] = correctCode.trim();
+  // Keep only last 200 corrections
+  const keys = Object.keys(corrections);
+  if (keys.length > 200) { delete corrections[keys[0]]; }
+  localStorage.setItem('tn_corrections', JSON.stringify(corrections));
+  updateCorrBadge();
+}
+
+function updateCorrBadge() {
+  const n = Object.keys(corrections).length;
+  const el = document.getElementById('corrBadge');
+  if (!el) return;
+  if (n > 0) {
+    el.style.display = '';
+    el.innerHTML = `<span class="corr-badge">🧠 ${n} corrección${n>1?'es':''} guardada${n>1?'s':''}</span>`;
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ── CLIENT STEP ───────────────────────────────────────────────────
+function showClientStep(suggested) {
+  document.getElementById('cardClient').style.display = 'block';
   setStep(2);
-  if(suggested){document.getElementById('clientSearch').value=suggested;searchClients(suggested);}
+  if (suggested) {
+    document.getElementById('clientInput').value = suggested;
+    filterClients(suggested);
+  }
 }
 
-let cst;
-async function searchClients(q){
-  clearTimeout(cst);
-  const dd=document.getElementById('clientDd');
-  if(!q||q.length<2){dd.classList.remove('open');return;}
-  cst=setTimeout(async()=>{
-    try{
-      const local=customers.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())).slice(0,20);
-      if(local.length){renderClientDd(local);}
-      else{const data=await fetchJSON(PROXY+'/customers?q='+encodeURIComponent(q));if(data.ok)renderClientDd(data.customers);}
-    }catch(e){}
-  },250);
-}
-
-function renderClientDd(list){
-  const dd=document.getElementById('clientDd');
-  if(!list.length){dd.innerHTML='<div class="dd-empty">Sin resultados</div>';}
-  else{dd.innerHTML=list.map(c=>'<div class="dd-item" onmousedown="selectClient('+c.id+',\''+esc(c.name)+'\',\''+esc(c.ref||'')+'\')"><div class="dd-name">'+esc(c.name)+'</div>'+(c.ref?'<div class="dd-ref">Ref: '+esc(c.ref)+'</div>':'')+'</div>').join('');}
+function filterClients(q) {
+  const dd = document.getElementById('clientDD');
+  if (!q || q.length < 1) { dd.classList.remove('open'); return; }
+  const ql = q.toLowerCase();
+  const matches = allCustomers.filter(c => c.name.toLowerCase().includes(ql)).slice(0, 30);
+  if (!matches.length) {
+    dd.innerHTML = '<div class="dd-empty">Sin resultados</div>';
+  } else {
+    dd.innerHTML = matches.map(c =>
+      `<div class="ddi" onmousedown="pickClient(${c.id},'${esc2(c.name)}','${esc2(c.ref||'')}')">
+        <div class="ddi-name">${esc(c.name)}</div>
+        ${c.ref ? `<div class="ddi-ref">${esc(c.ref)}</div>` : ''}
+       </div>`
+    ).join('');
+  }
   dd.classList.add('open');
 }
 
-function selectClient(id,name,ref){
-  selectedClient={id,name,ref};
-  document.getElementById('clientSearchWrap').innerHTML='<div class="client-selected"><div class="client-selected-name">✓ '+esc(name)+'</div><button class="btn-remove" onclick="clearClient()">✕</button></div>';
-  document.getElementById('btnConfirmClient').disabled=false;
+function pickClient(id, name, ref) {
+  selClient = { id, name, ref };
+  document.getElementById('ddWrap').innerHTML =
+    `<div class="selected-client"><div class="sel-name">✓ ${esc(name)}</div><button class="ra res" onclick="clearClient()">✕</button></div>`;
+  document.getElementById('btnConfirm').disabled = false;
 }
 
-function clearClient(){
-  selectedClient=null;
-  document.getElementById('clientSearchWrap').innerHTML='<input type="text" id="clientSearch" placeholder="Escribe el nombre del cliente..." oninput="searchClients(this.value)" onblur="setTimeout(()=>closeClientDd(),200)" autocomplete="off"><div class="dropdown" id="clientDd"></div>';
-  document.getElementById('btnConfirmClient').disabled=true;
+function clearClient() {
+  selClient = null;
+  document.getElementById('ddWrap').innerHTML =
+    `<input class="finput" id="clientInput" type="text" placeholder="Escribe para buscar cliente..."
+     oninput="filterClients(this.value)" onblur="setTimeout(closeDD,180)" autocomplete="off">
+    <div class="dropdown" id="clientDD"></div>`;
+  document.getElementById('btnConfirm').disabled = true;
 }
 
-function closeClientDd(){const dd=document.getElementById('clientDd');if(dd)dd.classList.remove('open');}
+function closeDD() { document.getElementById('clientDD')?.classList.remove('open'); }
 
-function confirmClient(){
-  if(!selectedClient)return;
-  rows=rows.map(r=>({...r,cliente:selectedClient.name}));
-  document.getElementById('cardClient').style.display='none';
+function confirmClient() {
+  if (!selClient) return;
+  rows = rows.map(r => ({ ...r, cliente: selClient.name }));
+  document.getElementById('cardClient').style.display = 'none';
   showReview();
 }
 
-function showReview(){
-  document.getElementById('cardReview').style.display='block';
-  document.getElementById('newOrderBtn').style.display='block';
-  setStep(3);renderReview();updateSummary();
+// ── REVIEW ────────────────────────────────────────────────────────
+function showReview() {
+  document.getElementById('cardReview').style.display = 'block';
+  document.getElementById('divNew').style.display = 'block';
+  setStep(3);
+  renderTable();
+  renderSummary();
 }
 
-function renderReview(){
-  const tbody=document.getElementById('reviewBody');tbody.innerHTML='';
-  rows.forEach((r,i)=>{
-    const tr=document.createElement('tr');tr.id='tr-'+i;
-    if(r.rejected)tr.classList.add('rejected');
-    const cb={'high':'<span class="badge badge-ok">✓ Alta</span>','medium':'<span class="badge badge-med">~ Media</span>','low':'<span class="badge badge-low">✗ Baja</span>'}[r.confidence]||'';
-    tr.innerHTML='<td style="color:var(--ink3);font-weight:700;font-size:.75rem">'+(i+1)+'</td><td><div class="prod-wrap"><input class="prod-input '+prodClass(r)+'" id="pi-'+i+'" value="'+esc(r.codigo||'')+'" oninput="onProdInput('+i+',this)" onblur="setTimeout(()=>closeProdDd('+i+'),180)" autocomplete="off"><div class="prod-dropdown" id="pd-'+i+'"></div></div></td><td style="color:var(--ink2);font-size:.8rem;max-width:200px" id="pname-'+i+'">'+esc(r.nombre_producto||'')+'</td><td><input class="qty-input" value="'+(r.cantidad||1)+'" type="number" min="0.01" step="any" onchange="rows['+i+'].cantidad=parseFloat(this.value)||1;updateSummary()"></td><td>'+cb+(r.nota_ia?'<br><span style="font-size:.68rem;color:var(--ink3)">'+esc(r.nota_ia)+'</span>':'')+'</td><td>'+(r.rejected?'<button class="btn-row-action restore" onclick="restoreRow('+i+')">↩</button>':'<button class="btn-row-action del" onclick="rejectRow('+i+')">✕</button>')+'</td>';
-    tbody.appendChild(tr);
+function renderTable() {
+  const tb = document.getElementById('tBody');
+  tb.innerHTML = '';
+  rows.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.id = 'tr' + i;
+    if (r.rejected) tr.classList.add('rej');
+    const cb = { high: '<span class="badge b-ok">✓ Alta</span>', medium: '<span class="badge b-med">~ Media</span>', low: '<span class="badge b-low">✗ Baja</span>' }[r.confidence] || '';
+    tr.innerHTML = `
+      <td style="color:var(--ink3);font-size:.73rem;font-weight:700">${i+1}</td>
+      <td><div class="pw">
+        <input class="pi ${pcls(r)}" id="pi${i}" value="${esc(r.codigo||'')}"
+               oninput="onPi(${i},this)" onblur="setTimeout(()=>closePDD(${i}),160)" autocomplete="off">
+        <div class="pdd" id="pd${i}"></div>
+      </div></td>
+      <td style="color:var(--ink2);font-size:.79rem;max-width:195px" id="pn${i}">${esc(r.nombre_producto||'')}</td>
+      <td><input class="qi" type="number" min="0.01" step="any" value="${r.cantidad||1}"
+           onchange="rows[${i}].cantidad=parseFloat(this.value)||1;renderSummary()"></td>
+      <td>${cb}${r.nota_ia ? `<br><span style="font-size:.65rem;color:var(--ink3)">${esc(r.nota_ia)}</span>` : ''}</td>
+      <td>${r.rejected
+        ? `<button class="ra res" onclick="restoreRow(${i})">↩</button>`
+        : `<button class="ra del" onclick="rejectRow(${i})">✕</button>`
+      }</td>`;
+    tb.appendChild(tr);
   });
 }
 
-function prodClass(r){if(r.matchStatus==='ok')return 'ok';if(['partial','name'].includes(r.matchStatus))return 'warn';if(r.matchStatus==='not-found')return 'err';return '';}
-
-function getMatchStatus(code,confidence){
-  if(!catalog.length)return 'no-catalog';
-  const c=(code||'').trim().toUpperCase();
-  if(catalog.find(p=>p.code.toUpperCase()===c))return 'ok';
-  if(catalog.find(p=>p.code.toUpperCase().includes(c)||c.includes(p.code.toUpperCase())))return 'partial';
-  if(confidence==='high')return 'ok';
-  if(confidence==='medium')return 'partial';
-  return 'not-found';
+function pcls(r) {
+  if (r.ms === 'ok') return 'ok';
+  if (r.ms === 'partial') return 'warn';
+  if (r.ms === 'notfound') return 'err';
+  return '';
 }
 
-function onProdInput(i,input){
-  const val=input.value.trim();rows[i].codigo=val;
-  const pd=document.getElementById('pd-'+i);
-  if(!val||val.length<2){pd.classList.remove('open');return;}
-  const matches=catalog.filter(p=>p.code.toUpperCase().includes(val.toUpperCase())||p.name.toLowerCase().includes(val.toLowerCase())).slice(0,10);
-  if(!matches.length){pd.classList.remove('open');return;}
-  pd.innerHTML=matches.map(p=>'<div class="pd-item" onmousedown="selectProd('+i+',\''+esc(p.code)+'\',\''+esc(p.name)+'\')"><div class="pd-code">'+p.code+'</div><div class="pd-name">'+p.name+'</div></div>').join('');
+function matchStatus(code, confidence) {
+  if (!catalog.length) return 'ok';
+  const c = (code||'').trim().toUpperCase();
+  if (!c) return 'notfound';
+  if (catalog.find(p => p.code.toUpperCase() === c)) return 'ok';
+  if (catalog.find(p => p.code.toUpperCase().includes(c) || c.includes(p.code.toUpperCase()))) return 'partial';
+  if (confidence === 'high') return 'ok';
+  if (confidence === 'medium') return 'partial';
+  return 'notfound';
+}
+
+function onPi(i, inp) {
+  const val = inp.value.trim();
+  rows[i].codigo = val;
+  const pd = document.getElementById('pd' + i);
+  if (!val || val.length < 2) { pd.classList.remove('open'); return; }
+  const m = catalog.filter(p =>
+    p.code.toUpperCase().includes(val.toUpperCase()) ||
+    p.name.toLowerCase().includes(val.toLowerCase())
+  ).slice(0, 12);
+  if (!m.length) { pd.classList.remove('open'); return; }
+  pd.innerHTML = m.map(p =>
+    `<div class="pdi" onmousedown="pickProd(${i},'${esc2(p.code)}','${esc2(p.name)}')">
+      <div class="pdi-code">${p.code}</div>
+      <div class="pdi-name">${p.name}</div>
+     </div>`
+  ).join('');
   pd.classList.add('open');
 }
 
-function selectProd(i,code,name){
-  rows[i].codigo=code;rows[i].nombre_producto=name;rows[i].matchStatus='ok';rows[i].confidence='high';
-  const inp=document.getElementById('pi-'+i);if(inp){inp.value=code;inp.className='prod-input ok';}
-  const pn=document.getElementById('pname-'+i);if(pn)pn.textContent=name;
-  closeProdDd(i);updateSummary();
+function pickProd(i, code, name) {
+  // Save correction if original was different
+  const orig = rows[i].origCode || '';
+  if (orig && orig !== code) saveCorrection(orig, code);
+
+  rows[i].codigo = code; rows[i].nombre_producto = name;
+  rows[i].ms = 'ok'; rows[i].confidence = 'high';
+  const inp = document.getElementById('pi' + i);
+  if (inp) { inp.value = code; inp.className = 'pi ok'; }
+  document.getElementById('pn' + i).textContent = name;
+  closePDD(i); renderSummary();
 }
 
-function closeProdDd(i){const pd=document.getElementById('pd-'+i);if(pd)pd.classList.remove('open');}
+function closePDD(i) { document.getElementById('pd' + i)?.classList.remove('open'); }
 
-function rejectRow(i){
-  rows[i].rejected=true;
-  document.getElementById('tr-'+i)?.classList.add('rejected');
-  const td=document.querySelector('#tr-'+i+' td:last-child');
-  if(td)td.innerHTML='<button class="btn-row-action restore" onclick="restoreRow('+i+')">↩</button>';
-  updateSummary();
+function rejectRow(i) {
+  rows[i].rejected = true;
+  document.getElementById('tr' + i)?.classList.add('rej');
+  document.querySelector('#tr' + i + ' td:last-child').innerHTML =
+    `<button class="ra res" onclick="restoreRow(${i})">↩</button>`;
+  renderSummary();
 }
 
-function restoreRow(i){
-  rows[i].rejected=false;
-  document.getElementById('tr-'+i)?.classList.remove('rejected');
-  const td=document.querySelector('#tr-'+i+' td:last-child');
-  if(td)td.innerHTML='<button class="btn-row-action del" onclick="rejectRow('+i+')">✕</button>';
-  updateSummary();
+function restoreRow(i) {
+  rows[i].rejected = false;
+  document.getElementById('tr' + i)?.classList.remove('rej');
+  document.querySelector('#tr' + i + ' td:last-child').innerHTML =
+    `<button class="ra del" onclick="rejectRow(${i})">✕</button>`;
+  renderSummary();
 }
 
-function clearRejected(){rows=rows.filter(r=>!r.rejected);renderReview();updateSummary();toast('Filas rechazadas eliminadas','ok');}
-
-function addEmptyRow(){
-  rows.push({cliente:selectedClient?.name||'',codigo:'',nombre_producto:'',cantidad:1,confidence:'high',matchStatus:'no-catalog',rejected:false});
-  renderReview();updateSummary();
-  setTimeout(()=>document.getElementById('pi-'+(rows.length-1))?.focus(),50);
+function purgeRej() {
+  rows = rows.filter(r => !r.rejected);
+  renderTable(); renderSummary();
+  toast('Rechazados eliminados', 'ok');
 }
 
-function updateSummary(){
-  const active=rows.filter(r=>!r.rejected);
-  const ok=active.filter(r=>r.matchStatus==='ok').length;
-  const warn=active.filter(r=>['partial','name'].includes(r.matchStatus)).length;
-  const bad=active.filter(r=>r.matchStatus==='not-found').length;
-  document.getElementById('summaryRow').innerHTML='<div class="sum-pill"><div class="sum-val">'+active.length+'</div><div class="sum-label">Total</div></div><div class="sum-pill"><div class="sum-val ok">'+ok+'</div><div class="sum-label">Exactos</div></div><div class="sum-pill"><div class="sum-val warn">'+warn+'</div><div class="sum-label">Revisar</div></div><div class="sum-pill"><div class="sum-val bad">'+bad+'</div><div class="sum-label">No encontrados</div></div>';
+function addRow() {
+  rows.push({ cliente: selClient?.name||'', codigo:'', nombre_producto:'', cantidad:1, confidence:'high', ms:'notfound', rejected:false, origCode:'' });
+  renderTable(); renderSummary();
+  setTimeout(() => document.getElementById('pi' + (rows.length-1))?.focus(), 50);
 }
 
-function downloadExcel(){
-  const active=rows.filter(r=>!r.rejected&&r.codigo);
-  if(!active.length){toast('No hay líneas para exportar','warn');return;}
-  const clientName=selectedClient?.name||active[0]?.cliente||'CLIENTE';
-  const data=[['Cliente','Líneas del pedido/Producto/Referencia interna','Líneas del pedido/Cantidad']];
-  active.forEach((r,i)=>data.push([i===0?clientName:null,r.codigo,parseFloat(r.cantidad)||1]));
-  const ws=XLSX.utils.aoa_to_sheet(data);
-  ws['!cols']=[{wch:32},{wch:28},{wch:12}];
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Pedido');
-  const safe=clientName.replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
-  const date=new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb,'pedido_'+safe+'_'+date+'.xlsx');
-  setStep(4);toast('Excel descargado · '+active.length+' líneas ✓','ok');
+function renderSummary() {
+  const active = rows.filter(r => !r.rejected);
+  const ok = active.filter(r => r.ms === 'ok').length;
+  const warn = active.filter(r => r.ms === 'partial').length;
+  const bad = active.filter(r => r.ms === 'notfound').length;
+  document.getElementById('sRow').innerHTML =
+    `<div class="sp"><div class="sv">${active.length}</div><div class="sl">Total</div></div>
+     <div class="sp"><div class="sv ok">${ok}</div><div class="sl">Exactos</div></div>
+     <div class="sp"><div class="sv w">${warn}</div><div class="sl">Revisar</div></div>
+     <div class="sp"><div class="sv b">${bad}</div><div class="sl">No enc.</div></div>`;
 }
 
-function resetAll(){
-  rows=[];selectedClient=null;currentFile=null;currentFileType=null;
-  clearFileZone('photo');clearFileZone('excel');
-  document.getElementById('cardClient').style.display='none';
-  document.getElementById('cardReview').style.display='none';
-  document.getElementById('newOrderBtn').style.display='none';
-  document.getElementById('cardUpload').style.display='block';
-  document.getElementById('btnProcess').disabled=true;
-  clearClient();setStep(1);
+// ── DOWNLOAD ─────────────────────────────────────────────────────
+function downloadExcel() {
+  const active = rows.filter(r => !r.rejected && r.codigo);
+  if (!active.length) { toast('No hay líneas para exportar', 'warn'); return; }
+  const cname = selClient?.name || active[0]?.cliente || 'CLIENTE';
+  const data = [['Cliente','Líneas del pedido/Producto/Referencia interna','Líneas del pedido/Cantidad']];
+  active.forEach((r,i) => data.push([i===0 ? cname : null, r.codigo, parseFloat(r.cantidad)||1]));
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:34},{wch:28},{wch:12}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Pedido');
+  const safe = cname.replace(/[^a-zA-Z0-9]/g,'_').slice(0,28);
+  XLSX.writeFile(wb, `pedido_${safe}_${new Date().toISOString().slice(0,10)}.xlsx`);
+  setStep(4);
+  toast(`Descargado · ${active.length} líneas ✓`, 'ok');
 }
 
-async function readExcelAsText(file){
-  const data=await file.arrayBuffer();
-  const wb=XLSX.read(data,{type:'array'});
-  let text='';
-  wb.SheetNames.forEach(name=>{text+='\n--- Hoja: '+name+' ---\n'+XLSX.utils.sheet_to_csv(wb.Sheets[name]);});
-  return text;
+// ── RESET ─────────────────────────────────────────────────────────
+function resetAll() {
+  rows = []; selClient = null; excelFile = null;
+  clearPhotos(); clearTa();
+  clearExcel();
+  document.getElementById('cardClient').style.display = 'none';
+  document.getElementById('cardReview').style.display = 'none';
+  document.getElementById('divNew').style.display = 'none';
+  document.getElementById('cardUpload').style.display = 'block';
+  document.getElementById('btnProcess').disabled = true;
+  clearClient();
+  setStep(1);
+  updateCorrBadge();
 }
 
-async function fetchJSON(url){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
-function cap(s){return s[0].toUpperCase()+s.slice(1);}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-function setStatus(text,ok=false){document.getElementById('statusText').textContent=text;document.getElementById('statusPill').className='status-pill'+(ok?' ok':'');}
-function setStep(n){for(let i=1;i<=4;i++){const el=document.getElementById('step'+i);if(!el)continue;el.className='step'+(i===n?' active':i<n?' done':'');}}
-let toastT;
-function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type+' show';clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3500);}
+// ── HELPERS ───────────────────────────────────────────────────────
+async function fetchJ(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function post(url, body) {
+  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  return r.json();
+}
+
+async function readExcelText(file) {
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type:'array' });
+  return wb.SheetNames.map(n => `--- ${n} ---\n` + XLSX.utils.sheet_to_csv(wb.Sheets[n])).join('\n');
+}
+
+function setProc(title, sub) {
+  document.getElementById('procTitle').textContent = title;
+  document.getElementById('procSub').textContent = sub;
+}
+
+function setPill(txt, ok=false) {
+  document.getElementById('pillTxt').textContent = txt;
+  document.getElementById('pill').className = 'pill' + (ok ? ' ok' : '');
+}
+
+function setStep(n) {
+  for (let i=1;i<=4;i++) {
+    const el = document.getElementById('s'+i);
+    if (el) el.className = 'stp' + (i===n?' active':i<n?' done':'');
+  }
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc2(s) { return String(s||'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+
+let _tt;
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast ' + type + ' show';
+  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), 3200);
+}
 </script>
 </body>
 </html>
