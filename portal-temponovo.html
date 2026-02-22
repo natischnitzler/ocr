@@ -3,1450 +3,472 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Temponovo · Portal de Pedidos</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Temponovo · Ingresar Pedido</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-:root {
-  --bg: #f5f3ef;
-  --white: #ffffff;
-  --ink: #1a1a2e;
-  --ink2: #4a4a6a;
-  --ink3: #8888aa;
-  --accent: #e85d26;
-  --accent-light: #fff0ea;
-  --accent2: #2563eb;
-  --accent2-light: #eff6ff;
-  --green: #16a34a;
-  --green-light: #f0fdf4;
-  --yellow: #ca8a04;
-  --yellow-light: #fefce8;
-  --red: #dc2626;
-  --red-light: #fef2f2;
-  --border: #e2ddd8;
-  --shadow: 0 1px 3px rgba(26,26,46,0.08), 0 4px 16px rgba(26,26,46,0.04);
-  --shadow-lg: 0 4px 24px rgba(26,26,46,0.12);
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--ink);
-  font-family: 'Inter', sans-serif;
-  min-height: 100vh;
-  font-size: 14px;
-}
-
-/* ── TOPBAR ── */
-.topbar {
-  background: var(--ink);
-  color: white;
-  padding: 0 2rem;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.topbar-logo {
-  font-family: 'Syne', sans-serif;
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: -0.02em;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.topbar-logo span { color: var(--accent); }
-
-.topbar-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.5);
-}
-
-.topbar-status .dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #6b7280;
-}
-
-.topbar-status.connected .dot {
-  background: #4ade80;
-  box-shadow: 0 0 6px #4ade80;
-}
-
-.topbar-status.connected { color: #4ade80; }
-
-/* ── LAYOUT ── */
-.layout {
-  display: grid;
-  grid-template-columns: 340px 1fr;
-  min-height: calc(100vh - 56px);
-}
-
-/* ── SIDEBAR ── */
-.sidebar {
-  background: var(--white);
-  border-right: 1px solid var(--border);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  overflow-y: auto;
-  max-height: calc(100vh - 56px);
-  position: sticky;
-  top: 56px;
-}
-
-.sidebar-section { display: flex; flex-direction: column; gap: 0.75rem; }
-
-.section-label {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink3);
-}
-
-/* Config fields */
-.field-group { display: flex; flex-direction: column; gap: 0.4rem; }
-
-.field-group label {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--ink2);
-}
-
-.field-group input {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.6rem 0.8rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
-  color: var(--ink);
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  width: 100%;
-}
-
-.field-group input:focus {
-  border-color: var(--accent2);
-  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-}
-
-.btn-connect {
-  background: var(--ink);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.65rem;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.82rem;
-  cursor: pointer;
-  width: 100%;
-  letter-spacing: 0.02em;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.btn-connect:hover { background: #2d2d50; }
-.btn-connect:disabled { opacity: 0.5; cursor: not-allowed; }
-
-.catalog-info {
-  background: var(--green-light);
-  border: 1px solid #bbf7d0;
-  border-radius: 8px;
-  padding: 0.75rem;
-  font-size: 0.78rem;
-  color: var(--green);
-  display: none;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-/* Upload zones */
-.upload-zone {
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  padding: 1.2rem 1rem;
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: var(--bg);
-  position: relative;
-}
-
-.upload-zone:hover, .upload-zone.dragover {
-  border-color: var(--accent);
-  background: var(--accent-light);
-}
-
-.upload-zone.has-files {
-  border-style: solid;
-  border-color: var(--accent);
-  background: var(--accent-light);
-}
-
-.zone-icon { font-size: 1.6rem; display: block; margin-bottom: 0.3rem; }
-.zone-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.15rem; }
-.zone-hint { color: var(--ink3); font-size: 0.72rem; }
-.zone-count {
-  display: none;
-  margin-top: 0.4rem;
-  background: var(--accent);
-  color: white;
-  border-radius: 100px;
-  padding: 0.15rem 0.6rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.file-list {
-  margin-top: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.file-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.72rem;
-  color: var(--ink2);
-}
-
-.file-item button {
-  background: none;
-  border: none;
-  color: var(--ink3);
-  cursor: pointer;
-  font-size: 0.8rem;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.15s;
-}
-
-.file-item button:hover { color: var(--red); }
-
-input[type=file] { display: none; }
-
-.btn-process {
-  background: var(--accent);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 0.85rem;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  width: 100%;
-  letter-spacing: 0.02em;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  box-shadow: 0 4px 14px rgba(232,93,38,0.3);
-}
-
-.btn-process:hover:not(:disabled) {
-  background: #d14d1c;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(232,93,38,0.4);
-}
-
-.btn-process:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; transform: none; }
-
-/* ── MAIN ── */
-.main {
-  padding: 1.5rem 2rem;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-/* Stats bar */
-.stats-bar {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-.stat-card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem 1.2rem;
-  box-shadow: var(--shadow);
-}
-
-.stat-label { font-size: 0.72rem; color: var(--ink3); font-weight: 500; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
-.stat-val { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--ink); line-height: 1; }
-.stat-val.ok { color: var(--green); }
-.stat-val.warn { color: var(--yellow); }
-.stat-val.err { color: var(--red); }
-
-/* Log */
-.log-card {
-  background: var(--ink);
-  border-radius: 12px;
-  padding: 1rem 1.2rem;
-  display: none;
-  box-shadow: var(--shadow-lg);
-}
-
-.log-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.log-title .dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #4ade80;
-  box-shadow: 0 0 6px #4ade80;
-  animation: blink 1s infinite;
-}
-
-@keyframes blink { 50% { opacity: 0.2; } }
-
-.log-entries {
-  max-height: 160px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.log-line {
-  font-family: 'Inter', monospace;
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.6);
-  display: flex;
-  gap: 0.75rem;
-  animation: slideIn 0.2s ease;
-}
-
-@keyframes slideIn { from { opacity:0; transform: translateX(-6px); } to { opacity:1; transform:none; } }
-
-.log-line .ts { color: rgba(255,255,255,0.25); white-space: nowrap; }
-.log-line.ok .msg { color: #4ade80; }
-.log-line.err .msg { color: #f87171; }
-.log-line.warn .msg { color: #fbbf24; }
-.log-line.info .msg { color: rgba(255,255,255,0.8); }
-
-/* Table section */
-.table-section { display: none; }
-
-.table-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.table-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--ink);
-}
-
-.table-title span { color: var(--accent); }
-
-.table-actions { display: flex; gap: 0.6rem; }
-
-.btn-secondary {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.55rem 1rem;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 500;
-  cursor: pointer;
-  color: var(--ink);
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.btn-secondary:hover { border-color: var(--ink); background: var(--bg); }
-
-.btn-primary {
-  background: var(--ink);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.55rem 1.2rem;
-  font-family: 'Syne', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  letter-spacing: 0.02em;
-}
-
-.btn-primary:hover { background: #2d2d50; }
-
-.btn-download {
-  background: var(--green);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 0.55rem 1.2rem;
-  font-family: 'Syne', sans-serif;
-  font-size: 0.82rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  letter-spacing: 0.02em;
-  box-shadow: 0 2px 8px rgba(22,163,74,0.25);
-}
-
-.btn-download:hover { background: #15803d; }
-
-/* Table */
-.table-wrap {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-}
-
-table { width: 100%; border-collapse: collapse; }
-
-thead th {
-  background: var(--bg);
-  padding: 0.65rem 0.85rem;
-  text-align: left;
-  font-size: 0.68rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink3);
-  border-bottom: 1px solid var(--border);
-  white-space: nowrap;
-}
-
-tbody tr {
-  border-bottom: 1px solid var(--border);
-  transition: background 0.12s;
-}
-
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: #fafaf8; }
-
-tbody tr.row-rejected {
-  opacity: 0.4;
-  background: var(--red-light);
-  text-decoration: line-through;
-}
-
-tbody td {
-  padding: 0.55rem 0.85rem;
-  color: var(--ink);
-  vertical-align: middle;
-  font-size: 0.83rem;
-}
-
-/* Status badge */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 100px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.badge-ok { background: var(--green-light); color: var(--green); border: 1px solid #bbf7d0; }
-.badge-warn { background: var(--yellow-light); color: var(--yellow); border: 1px solid #fde68a; }
-.badge-err { background: var(--red-light); color: var(--red); border: 1px solid #fecaca; }
-.badge-foto { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
-.badge-excel { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-.badge-audio { background: #fdf4ff; color: #9333ea; border: 1px solid #e9d5ff; }
-
-/* Product cell with search */
-.prod-cell {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  position: relative;
-}
-
-.prod-code {
-  font-family: 'Inter', monospace;
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: var(--ink);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.3rem 0.5rem;
-  min-width: 120px;
-  outline: none;
-  transition: all 0.15s;
-}
-
-.prod-code:focus {
-  border-color: var(--accent2);
-  box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
-  background: white;
-}
-
-.prod-code.match-ok { border-color: var(--green); color: var(--green); background: var(--green-light); }
-.prod-code.match-warn { border-color: var(--yellow); color: var(--yellow); background: var(--yellow-light); }
-.prod-code.match-err { border-color: var(--red); color: var(--red); background: var(--red-light); }
-
-/* Autocomplete dropdown */
-.autocomplete-list {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  box-shadow: var(--shadow-lg);
-  z-index: 200;
-  max-height: 220px;
-  overflow-y: auto;
-  min-width: 300px;
-  display: none;
-}
-
-.autocomplete-list.open { display: block; }
-
-.ac-item {
-  padding: 0.55rem 0.85rem;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  border-bottom: 1px solid var(--border);
-  transition: background 0.1s;
-}
-
-.ac-item:last-child { border-bottom: none; }
-.ac-item:hover, .ac-item.selected { background: var(--accent-light); }
-
-.ac-code {
-  font-family: 'Inter', monospace;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--accent2);
-}
-
-.ac-name { font-size: 0.75rem; color: var(--ink2); }
-
-/* Editable cells */
-td[contenteditable] {
-  outline: none;
-  cursor: text;
-}
-
-td[contenteditable]:focus {
-  background: #fffbf7;
-  box-shadow: inset 0 0 0 2px rgba(232,93,38,0.2);
-}
-
-/* Row actions */
-.row-actions { display: flex; gap: 0.3rem; }
-
-.btn-row {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.15s;
-  color: var(--ink2);
-}
-
-.btn-row:hover { border-color: var(--ink); color: var(--ink); }
-.btn-row.reject { color: var(--red); border-color: #fecaca; }
-.btn-row.reject:hover { background: var(--red-light); }
-.btn-row.restore { color: var(--green); border-color: #bbf7d0; }
-.btn-row.restore:hover { background: var(--green-light); }
-
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: var(--ink3);
-}
-
-.empty-icon { font-size: 3rem; margin-bottom: 0.75rem; }
-.empty-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--ink2); margin-bottom: 0.5rem; }
-.empty-sub { font-size: 0.85rem; max-width: 340px; margin: 0 auto; line-height: 1.6; }
-
-/* Toast */
-.toast {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  background: var(--ink);
-  color: white;
-  border-radius: 10px;
-  padding: 0.85rem 1.2rem;
-  font-size: 0.85rem;
-  z-index: 9999;
-  transform: translateY(80px);
-  opacity: 0;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: var(--shadow-lg);
-  max-width: 300px;
-}
-
-.toast.show { transform: none; opacity: 1; }
-.toast.ok { border-left: 3px solid #4ade80; }
-.toast.err { border-left: 3px solid #f87171; }
-.toast.warn { border-left: 3px solid #fbbf24; }
-
-/* Spinner */
-.spin {
-  width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: rotate 0.7s linear infinite;
-  display: inline-block;
-  flex-shrink: 0;
-}
-
-@keyframes rotate { to { transform: rotate(360deg); } }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
-@media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; }
-  .sidebar { position: static; max-height: none; }
-  .stats-bar { grid-template-columns: repeat(2,1fr); }
-}
+:root{--bg:#f7f6f3;--white:#ffffff;--ink:#18181b;--ink2:#52525b;--ink3:#a1a1aa;--border:#e4e4e7;--accent:#dc4f00;--accent-bg:#fff4f0;--accent-border:#fecdbb;--green:#16a34a;--green-bg:#f0fdf4;--yellow:#b45309;--yellow-bg:#fffbeb;--red:#dc2626;--red-bg:#fef2f2;--blue:#2563eb;--blue-bg:#eff6ff;--radius:10px;--shadow:0 1px 2px rgba(0,0,0,.06),0 2px 8px rgba(0,0,0,.04);--shadow-md:0 4px 16px rgba(0,0,0,.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Figtree',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;font-size:14px;line-height:1.5}
+header{background:var(--ink);color:white;padding:0 1.5rem;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-weight:800;font-size:1rem;letter-spacing:-0.02em}
+.logo em{color:#dc4f00;font-style:normal}
+.status-pill{display:flex;align-items:center;gap:6px;font-size:.72rem;color:rgba(255,255,255,.45);background:rgba(255,255,255,.07);border-radius:100px;padding:4px 10px;transition:all .3s}
+.status-pill .dot{width:6px;height:6px;border-radius:50%;background:#52525b;transition:all .3s}
+.status-pill.ok{color:#4ade80}.status-pill.ok .dot{background:#4ade80;box-shadow:0 0 6px #4ade80}
+.page{max-width:760px;margin:0 auto;padding:2rem 1rem 4rem;display:flex;flex-direction:column;gap:1.25rem}
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.card-header{padding:1rem 1.25rem .75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-weight:700;font-size:.9rem;color:var(--ink);display:flex;align-items:center;gap:.5rem}
+.card-body{padding:1.25rem}
+.setup-row{display:flex;gap:.75rem;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:.3rem;flex:1}
+.field label{font-size:.72rem;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.field input{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:.6rem .85rem;font-family:'Figtree',sans-serif;font-size:.88rem;color:var(--ink);outline:none;transition:border-color .15s;width:100%}
+.field input:focus{border-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border-radius:var(--radius);font-family:'Figtree',sans-serif;font-weight:600;font-size:.85rem;cursor:pointer;transition:all .15s;white-space:nowrap;border:none;padding:.6rem 1.1rem}
+.btn-dark{background:var(--ink);color:white}.btn-dark:hover{background:#27272a}.btn-dark:disabled{opacity:.4;cursor:not-allowed}
+.btn-accent{background:var(--accent);color:white;box-shadow:0 2px 8px rgba(220,79,0,.25)}.btn-accent:hover{background:#c44300}.btn-accent:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.btn-green{background:var(--green);color:white;box-shadow:0 2px 8px rgba(22,163,74,.2)}.btn-green:hover{background:#15803d}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--ink2)}.btn-ghost:hover{border-color:var(--ink);color:var(--ink)}
+.steps{display:flex;gap:0;background:var(--bg);border-radius:10px;padding:4px}
+.step{flex:1;text-align:center;padding:.5rem;font-size:.78rem;font-weight:600;color:var(--ink3);border-radius:7px;transition:all .2s}
+.step.active{background:var(--white);color:var(--ink);box-shadow:var(--shadow)}
+.step.done{color:var(--green)}
+.upload-zone{border:2px dashed var(--border);border-radius:12px;padding:2.5rem 1.5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:var(--accent-bg)}
+.upload-zone.has-file{border-style:solid;border-color:var(--accent);background:var(--accent-bg);padding:1.25rem 1.5rem}
+.upload-icon{font-size:2rem;margin-bottom:.5rem}.upload-title{font-weight:700;font-size:.95rem;margin-bottom:.25rem}.upload-hint{color:var(--ink3);font-size:.8rem}
+.file-preview{display:flex;align-items:center;gap:.75rem}
+.file-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;border:1px solid var(--border);flex-shrink:0}
+.file-thumb.excel-thumb{background:var(--green-bg);border-color:#bbf7d0;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.file-info{flex:1;text-align:left}.file-name{font-weight:600;font-size:.85rem}.file-size{color:var(--ink3);font-size:.75rem}
+.btn-remove{background:none;border:none;color:var(--ink3);cursor:pointer;font-size:1rem;padding:4px;border-radius:6px;transition:all .15s}.btn-remove:hover{color:var(--red);background:var(--red-bg)}
+input[type=file]{display:none}
+.client-search-wrap{position:relative}
+.client-search-wrap input{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--radius);padding:.6rem .85rem;font-family:'Figtree',sans-serif;font-size:.88rem;color:var(--ink);outline:none;width:100%;transition:border-color .15s}
+.client-search-wrap input:focus{border-color:var(--accent)}
+.client-selected{display:flex;align-items:center;justify-content:space-between;background:var(--green-bg);border:1.5px solid #bbf7d0;border-radius:var(--radius);padding:.6rem .85rem}
+.client-selected-name{font-weight:600;color:var(--green);font-size:.9rem}
+.dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow-md);z-index:100;max-height:240px;overflow-y:auto;display:none}
+.dropdown.open{display:block}
+.dd-item{padding:.6rem .85rem;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border)}.dd-item:last-child{border-bottom:none}.dd-item:hover{background:var(--accent-bg)}
+.dd-name{font-weight:600;font-size:.85rem}.dd-ref{color:var(--ink3);font-size:.72rem}
+.dd-empty{padding:1rem;text-align:center;color:var(--ink3);font-size:.82rem}
+.processing-card{text-align:center;padding:2.5rem 1.5rem}
+.processing-spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-title{font-weight:700;font-size:1rem;margin-bottom:.4rem}.processing-sub{color:var(--ink3);font-size:.85rem}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+thead th{background:var(--bg);padding:.55rem .85rem;text-align:left;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#fafaf9}
+tbody tr.rejected{opacity:.35;background:var(--red-bg)}
+tbody tr.rejected td{text-decoration:line-through}
+tbody td{padding:.5rem .85rem;vertical-align:middle}
+.prod-wrap{position:relative}
+.prod-input{font-family:'Figtree',monospace;font-weight:700;font-size:.8rem;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.35rem .55rem;width:140px;outline:none;transition:all .15s;color:var(--ink)}
+.prod-input:focus{border-color:var(--blue);background:var(--blue-bg)}
+.prod-input.ok{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.prod-input.warn{border-color:#f59e0b;background:var(--yellow-bg);color:var(--yellow)}
+.prod-input.err{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.prod-dropdown{position:absolute;top:calc(100% + 3px);left:0;background:var(--white);border:1px solid var(--border);border-radius:9px;box-shadow:var(--shadow-md);z-index:200;max-height:200px;overflow-y:auto;min-width:280px;display:none}
+.prod-dropdown.open{display:block}
+.pd-item{padding:.5rem .75rem;cursor:pointer;border-bottom:1px solid var(--border);transition:background .1s}.pd-item:last-child{border-bottom:none}.pd-item:hover{background:var(--accent-bg)}
+.pd-code{font-weight:700;font-size:.75rem;color:var(--blue);font-family:monospace}.pd-name{font-size:.73rem;color:var(--ink2)}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:100px;font-size:.67rem;font-weight:700;white-space:nowrap}
+.badge-ok{background:var(--green-bg);color:var(--green);border:1px solid #bbf7d0}
+.badge-med{background:var(--yellow-bg);color:var(--yellow);border:1px solid #fde68a}
+.badge-low{background:var(--red-bg);color:var(--red);border:1px solid #fecaca}
+.qty-input{width:60px;text-align:right;font-weight:700;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;padding:.3rem .5rem;font-family:'Figtree',sans-serif;font-size:.85rem;outline:none;transition:border-color .15s}
+.qty-input:focus{border-color:var(--accent)}
+.btn-row-action{background:none;border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:.72rem;font-family:'Figtree',sans-serif;cursor:pointer;transition:all .15s;color:var(--ink2);font-weight:600}
+.btn-row-action.del{color:var(--red);border-color:#fecaca}.btn-row-action.del:hover{background:var(--red-bg)}
+.btn-row-action.restore{color:var(--green);border-color:#bbf7d0}.btn-row-action.restore:hover{background:var(--green-bg)}
+.summary-row{display:flex;gap:.75rem;flex-wrap:wrap}
+.sum-pill{flex:1;min-width:80px;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;text-align:center}
+.sum-val{font-size:1.5rem;font-weight:800;line-height:1}.sum-label{font-size:.7rem;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.sum-val.ok{color:var(--green)}.sum-val.warn{color:var(--yellow)}.sum-val.bad{color:var(--red)}
+.actions-row{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:white;border-radius:10px;padding:.75rem 1.1rem;font-size:.85rem;font-weight:500;z-index:9999;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);box-shadow:var(--shadow-md)}
+.toast.show{transform:none;opacity:1}
+.toast.ok{border-left:3px solid #4ade80}.toast.err{border-left:3px solid #f87171}.toast.warn{border-left:3px solid #fbbf24}
+@media(max-width:600px){.setup-row{flex-direction:column}}
 </style>
 </head>
 <body>
-
-<!-- TOPBAR -->
-<div class="topbar">
-  <div class="topbar-logo">⚡ Tempo<span>novo</span> · Pedidos</div>
-  <div class="topbar-status" id="topbarStatus">
-    <span class="dot"></span>
-    <span id="topbarStatusText">Sin conectar a Odoo</span>
+<header>
+  <div class="logo">Tempo<em>novo</em> · Pedidos</div>
+  <div class="status-pill" id="statusPill"><span class="dot"></span><span id="statusText">Cargando...</span></div>
+</header>
+<div class="page">
+  <!-- Setup -->
+  <div class="card" id="setupCard">
+    <div class="card-header"><div class="card-title">⚙️ Configuración del servidor</div><span style="font-size:.72rem;color:var(--ink3)">Solo la primera vez</span></div>
+    <div class="card-body">
+      <div class="setup-row">
+        <div class="field"><label>URL del proxy (Render)</label><input type="text" id="proxyUrl" placeholder="https://temponovo-odoo-proxy.onrender.com"></div>
+        <button class="btn btn-dark" onclick="initProxy()" id="btnInit">Conectar</button>
+      </div>
+    </div>
   </div>
-</div>
-
-<div class="layout">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-
-    <!-- Config Proxy -->
-    <div class="sidebar-section">
-      <div class="section-label">🔗 Conexión Odoo</div>
-      <div class="field-group">
-        <label>URL del proxy (Render)</label>
-        <input type="text" id="odooUrl" placeholder="https://temponovo-odoo-proxy.onrender.com">
+  <!-- Steps -->
+  <div class="steps" id="stepsBar" style="display:none">
+    <div class="step active" id="step1">1 · Archivo</div>
+    <div class="step" id="step2">2 · Cliente</div>
+    <div class="step" id="step3">3 · Revisar</div>
+    <div class="step" id="step4">4 · Descargar</div>
+  </div>
+  <!-- Upload -->
+  <div class="card" id="cardUpload" style="display:none">
+    <div class="card-header"><div class="card-title">📁 Sube el pedido</div></div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+      <div class="upload-zone" id="zonePhoto" onclick="document.getElementById('inputPhoto').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event,'photo')">
+        <div id="zonePhotoContent"><div class="upload-icon">📸</div><div class="upload-title">Foto del pedido</div><div class="upload-hint">JPG, PNG, WEBP · arrastra o haz clic</div></div>
       </div>
-      <button class="btn-connect" id="btnConnect" onclick="connectOdoo()">
-        <span id="connectIcon">🔌</span>
-        <span id="connectText">Conectar y cargar catálogo</span>
-      </button>
-      <div class="catalog-info" id="catalogInfo">
-        <span>✓</span>
-        <span id="catalogInfoText">Catálogo cargado</span>
+      <input type="file" id="inputPhoto" accept="image/*" onchange="handleFile('photo',this)">
+      <div style="text-align:center;color:var(--ink3);font-size:.8rem;font-weight:600">— o —</div>
+      <div class="upload-zone" id="zoneExcel" onclick="document.getElementById('inputExcel').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handleDrop(event,'excel')">
+        <div id="zoneExcelContent"><div class="upload-icon">📊</div><div class="upload-title">Excel del pedido</div><div class="upload-hint">XLS, XLSX, CSV · arrastra o haz clic</div></div>
+      </div>
+      <input type="file" id="inputExcel" accept=".xls,.xlsx,.csv" onchange="handleFile('excel',this)">
+      <button class="btn btn-accent" id="btnProcess" onclick="processFile()" disabled style="margin-top:.5rem">⚡ Procesar con IA</button>
+    </div>
+  </div>
+  <!-- Processing -->
+  <div class="card" id="cardProcessing" style="display:none">
+    <div class="card-body">
+      <div class="processing-card">
+        <div class="processing-spinner"></div>
+        <div class="processing-title" id="processingTitle">Analizando el pedido...</div>
+        <div class="processing-sub" id="processingSub">La IA está leyendo el archivo y buscando los productos</div>
       </div>
     </div>
-
-    <hr style="border:none;border-top:1px solid var(--border)">
-
-    <!-- Config IA -->
-    <div class="sidebar-section">
-      <div class="section-label">🤖 API Keys IA</div>
-      <div class="field-group">
-        <label>Anthropic (Claude) — para fotos y texto</label>
-        <input type="password" id="claudeKey" placeholder="sk-ant-...">
-      </div>
-      <div class="field-group">
-        <label>OpenAI (Whisper) — para audios</label>
-        <input type="password" id="openaiKey" placeholder="sk-... (opcional)">
-      </div>
-    </div>
-
-    <hr style="border:none;border-top:1px solid var(--border)">
-
-    <!-- Upload zones -->
-    <div class="sidebar-section">
-      <div class="section-label">📁 Archivos del día</div>
-
-      <!-- Photos -->
-      <div>
-        <div class="upload-zone" id="zonePhoto"
-             ondragover="ev.preventDefault();this.classList.add('dragover')"
-             ondragleave="this.classList.remove('dragover')"
-             ondrop="dropFiles(event,'photo')">
-          <span class="zone-icon">📸</span>
-          <div class="zone-name">Fotos de pedidos</div>
-          <div class="zone-hint">JPG, PNG, WEBP — arrastra o haz clic</div>
-          <div class="zone-count" id="photoCount">0</div>
-        </div>
-        <input type="file" id="inputPhoto" multiple accept="image/*" onchange="addFiles('photo',this)">
-        <div class="file-list" id="fileListPhoto"></div>
-        <button class="btn-secondary" style="width:100%;margin-top:0.4rem;justify-content:center;font-size:0.75rem;" onclick="document.getElementById('inputPhoto').click()">+ Agregar fotos</button>
-      </div>
-
-      <!-- Excel -->
-      <div>
-        <div class="upload-zone" id="zoneExcel"
-             ondragover="ev.preventDefault();this.classList.add('dragover')"
-             ondragleave="this.classList.remove('dragover')"
-             ondrop="dropFiles(event,'excel')">
-          <span class="zone-icon">📊</span>
-          <div class="zone-name">Excel / CSV</div>
-          <div class="zone-hint">XLS, XLSX, CSV</div>
-          <div class="zone-count" id="excelCount">0</div>
-        </div>
-        <input type="file" id="inputExcel" multiple accept=".xls,.xlsx,.csv" onchange="addFiles('excel',this)">
-        <div class="file-list" id="fileListExcel"></div>
-        <button class="btn-secondary" style="width:100%;margin-top:0.4rem;justify-content:center;font-size:0.75rem;" onclick="document.getElementById('inputExcel').click()">+ Agregar Excel</button>
-      </div>
-
-      <!-- Audio -->
-      <div>
-        <div class="upload-zone" id="zoneAudio"
-             ondragover="ev.preventDefault();this.classList.add('dragover')"
-             ondragleave="this.classList.remove('dragover')"
-             ondrop="dropFiles(event,'audio')">
-          <span class="zone-icon">🎙️</span>
-          <div class="zone-name">Audios de clientes</div>
-          <div class="zone-hint">MP3, M4A, WAV, OGG</div>
-          <div class="zone-count" id="audioCount">0</div>
-        </div>
-        <input type="file" id="inputAudio" multiple accept="audio/*" onchange="addFiles('audio',this)">
-        <div class="file-list" id="fileListAudio"></div>
-        <button class="btn-secondary" style="width:100%;margin-top:0.4rem;justify-content:center;font-size:0.75rem;" onclick="document.getElementById('inputAudio').click()">+ Agregar audios</button>
-      </div>
-    </div>
-
-    <!-- Process button -->
-    <button class="btn-process" id="btnProcess" onclick="processAll()" disabled>
-      <span id="btnProcessIcon">⚡</span>
-      <span id="btnProcessText">Procesar todos los archivos</span>
-    </button>
-
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main class="main">
-
-    <!-- Empty state -->
-    <div class="empty-state" id="emptyState">
-      <div class="empty-icon">📋</div>
-      <div class="empty-title">Sin pedidos procesados aún</div>
-      <div class="empty-sub">Conecta Odoo, sube los archivos del día y presiona <strong>Procesar</strong> para comenzar.</div>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-bar" id="statsBar" style="display:none">
-      <div class="stat-card">
-        <div class="stat-label">Total líneas</div>
-        <div class="stat-val" id="statTotal">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Producto OK</div>
-        <div class="stat-val ok" id="statOk">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Revisar</div>
-        <div class="stat-val warn" id="statWarn">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">No encontrado</div>
-        <div class="stat-val err" id="statErr">0</div>
-      </div>
-    </div>
-
-    <!-- Log -->
-    <div class="log-card" id="logCard">
-      <div class="log-title"><span class="dot"></span> Procesando archivos</div>
-      <div class="log-entries" id="logEntries"></div>
-    </div>
-
-    <!-- Table -->
-    <div class="table-section" id="tableSection">
-      <div class="table-header">
-        <div class="table-title">Pedidos <span>detectados</span></div>
-        <div class="table-actions">
-          <button class="btn-secondary" onclick="addEmptyRow()">+ Agregar fila</button>
-          <button class="btn-secondary" onclick="clearRejected()">🗑 Limpiar rechazados</button>
-          <button class="btn-download" onclick="downloadExcel()">⬇ Descargar Excel para Odoo</button>
+  </div>
+  <!-- Client -->
+  <div class="card" id="cardClient" style="display:none">
+    <div class="card-header"><div class="card-title">👤 ¿De quién es este pedido?</div></div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+      <div id="clientSelectorWrap">
+        <div class="client-search-wrap" id="clientSearchWrap">
+          <input type="text" id="clientSearch" placeholder="Escribe el nombre del cliente..." oninput="searchClients(this.value)" onblur="setTimeout(()=>closeClientDd(),200)" autocomplete="off">
+          <div class="dropdown" id="clientDd"></div>
         </div>
       </div>
-      <div class="table-wrap">
+      <button class="btn btn-accent" id="btnConfirmClient" onclick="confirmClient()" disabled>Confirmar cliente →</button>
+    </div>
+  </div>
+  <!-- Review -->
+  <div class="card" id="cardReview" style="display:none">
+    <div class="card-header">
+      <div class="card-title">✅ Revisar líneas del pedido</div>
+      <button class="btn btn-ghost" onclick="addEmptyRow()" style="padding:4px 10px;font-size:.78rem">+ Agregar</button>
+    </div>
+    <div class="card-body" style="padding:0">
+      <div class="table-scroll">
         <table>
-          <thead>
-            <tr>
-              <th style="width:32px">#</th>
-              <th style="width:60px">Origen</th>
-              <th>Cliente</th>
-              <th>Código producto</th>
-              <th>Nombre producto</th>
-              <th style="width:70px">Cant.</th>
-              <th>Confianza IA</th>
-              <th style="width:80px">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
+          <thead><tr><th>#</th><th>Código</th><th>Nombre producto</th><th>Cant.</th><th>Confianza</th><th></th></tr></thead>
+          <tbody id="reviewBody"></tbody>
         </table>
       </div>
-      <p style="color:var(--ink3);font-size:0.75rem;margin-top:0.5rem;">
-        💡 Haz clic en cualquier celda para editar · El código de producto tiene autocompletado del catálogo
-      </p>
     </div>
-
-  </main>
+    <div style="padding:1rem 1.25rem;border-top:1px solid var(--border)"><div class="summary-row" id="summaryRow"></div></div>
+    <div style="padding:0 1.25rem 1.25rem">
+      <div class="actions-row">
+        <button class="btn btn-ghost" onclick="clearRejected()">🗑 Limpiar rechazados</button>
+        <button class="btn btn-green" onclick="downloadExcel()">⬇ Descargar Excel para Odoo</button>
+      </div>
+    </div>
+  </div>
+  <!-- New order -->
+  <div id="newOrderBtn" style="display:none;text-align:center">
+    <button class="btn btn-dark" onclick="resetAll()">+ Ingresar nuevo pedido</button>
+  </div>
 </div>
-
-<!-- Toast -->
 <div class="toast" id="toast"></div>
-
 <script>
-// ── STATE ────────────────────────────────────────────────────
-const files = { photo: [], excel: [], audio: [] };
-let catalog = []; // [{code, name}]
-let rows = [];    // processed order lines
-let isProcessing = false;
-
-// ── PROXY CONFIG ─────────────────────────────────────────────
-// Cambia esta URL por la que te da Render después del deploy
-let PROXY_URL = localStorage.getItem('proxy_url') || '';
-
-async function connectOdoo() {
-  const proxyInput = document.getElementById('odooUrl').value.trim().replace(/\/$/, '');
-  if (!proxyInput) { toast('Ingresa la URL del proxy de Render', 'err'); return; }
-  PROXY_URL = proxyInput;
-  localStorage.setItem('proxy_url', PROXY_URL);
-
-  setConnectLoading(true);
-  log('Conectando al proxy...', 'info');
-
-  try {
-    // Health check
-    const health = await fetch(`${PROXY_URL}/`).then(r => r.json());
-    if (health.status !== 'ok') throw new Error('El proxy no responde');
-    log(`✓ Proxy activo: ${health.service}`, 'ok');
-
-    // Load catalog
-    log('Cargando catálogo de productos desde Odoo...', 'info');
-    const data = await fetch(`${PROXY_URL}/catalog`).then(r => r.json());
-    if (!data.ok) throw new Error(data.detail || 'Error al cargar catálogo');
-
-    catalog = data.products;
-    log(`✓ ${catalog.length} productos cargados`, 'ok');
-
-    // Update UI
-    document.getElementById('catalogInfo').style.display = 'flex';
-    document.getElementById('catalogInfoText').textContent = `${catalog.length} productos cargados`;
-    const ts = document.getElementById('topbarStatus');
-    ts.classList.add('connected');
-    document.getElementById('topbarStatusText').textContent = `Odoo conectado · ${catalog.length} productos`;
-
-    updateProcessBtn();
-    toast(`Catálogo cargado: ${catalog.length} productos ✓`, 'ok');
-
-  } catch(e) {
-    log(`✗ Error: ${e.message}`, 'err');
-    toast(`Error: ${e.message}`, 'err');
-  }
-
-  setConnectLoading(false);
-}
-
-function setConnectLoading(on) {
-  document.getElementById('btnConnect').disabled = on;
-  document.getElementById('connectIcon').innerHTML = on ? '<span class="spin"></span>' : '🔌';
-  document.getElementById('connectText').textContent = on ? 'Conectando...' : 'Conectar y cargar catálogo';
-}
-
-// ── FILE HANDLING ─────────────────────────────────────────────
-function addFiles(type, input) {
-  Array.from(input.files).forEach(f => files[type].push(f));
-  renderFileList(type);
-  updateProcessBtn();
-  input.value = '';
-}
-
-function dropFiles(event, type) {
-  event.preventDefault();
-  document.getElementById(`zone${cap(type)}`).classList.remove('dragover');
-  Array.from(event.dataTransfer.files).forEach(f => files[type].push(f));
-  renderFileList(type);
-  updateProcessBtn();
-}
-
-function renderFileList(type) {
-  const list = document.getElementById(`fileList${cap(type)}`);
-  const count = document.getElementById(`${type}Count`);
-  const zone = document.getElementById(`zone${cap(type)}`);
-
-  list.innerHTML = files[type].map((f, i) => `
-    <div class="file-item">
-      <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px">${f.name}</span>
-      <button onclick="removeFile('${type}',${i})">✕</button>
-    </div>
-  `).join('');
-
-  count.textContent = files[type].length;
-  count.style.display = files[type].length > 0 ? 'inline-block' : 'none';
-  zone.classList.toggle('has-files', files[type].length > 0);
-}
-
-function removeFile(type, i) {
-  files[type].splice(i, 1);
-  renderFileList(type);
-  updateProcessBtn();
-}
-
-function cap(s) { return s[0].toUpperCase() + s.slice(1); }
-
-function updateProcessBtn() {
-  const hasFiles = files.photo.length + files.excel.length + files.audio.length > 0;
-  const hasClaude = !!document.getElementById('claudeKey').value.trim();
-  document.getElementById('btnProcess').disabled = !(hasFiles && hasClaude);
-}
-
-document.getElementById('claudeKey').addEventListener('input', updateProcessBtn);
-
-// ── PROCESSING ───────────────────────────────────────────────
-async function processAll() {
-  if (isProcessing) return;
-  isProcessing = true;
-  rows = [];
-
-  const claudeKey = document.getElementById('claudeKey').value.trim();
-  const openaiKey = document.getElementById('openaiKey').value.trim();
-
-  if (!claudeKey) { toast('Ingresa tu API key de Claude', 'err'); isProcessing = false; return; }
-
-  // Show log
-  document.getElementById('emptyState').style.display = 'none';
-  document.getElementById('logCard').style.display = 'block';
-  document.getElementById('logEntries').innerHTML = '';
-
-  setBtnProcessLoading(true);
-
-  // Build catalog context (first 800 products to keep prompt manageable)
-  const catalogCtx = catalog.slice(0, 800).map(p => `${p.code}|${p.name}`).join('\n');
-  const hasLargeCatalog = catalog.length > 800;
-
-  try {
-    // Photos
-    for (const f of files.photo) {
-      log(`📸 Procesando foto: ${f.name}`, 'info');
-      try {
-        const r = await processImage(f, claudeKey, catalogCtx, hasLargeCatalog);
-        rows.push(...r);
-        log(`✓ ${r.length} líneas de ${f.name}`, 'ok');
-      } catch(e) { log(`✗ ${f.name}: ${e.message}`, 'err'); }
-    }
-
-    // Excels
-    for (const f of files.excel) {
-      log(`📊 Procesando Excel: ${f.name}`, 'info');
-      try {
-        const r = await processExcelFile(f, claudeKey, catalogCtx, hasLargeCatalog);
-        rows.push(...r);
-        log(`✓ ${r.length} líneas de ${f.name}`, 'ok');
-      } catch(e) { log(`✗ ${f.name}: ${e.message}`, 'err'); }
-    }
-
-    // Audios
-    for (const f of files.audio) {
-      log(`🎙 Procesando audio: ${f.name}`, 'info');
-      try {
-        let transcript = '';
-        if (openaiKey) {
-          log(`  → Transcribiendo con Whisper...`, 'info');
-          transcript = await transcribeAudio(f, openaiKey);
-          log(`  → Transcripción: "${transcript.slice(0,80)}..."`, 'info');
-        } else {
-          log(`  → Sin API de Whisper, Claude intentará leer el nombre del archivo`, 'warn');
-          transcript = `[Archivo de audio: ${f.name}. Sin transcripción disponible. Marcar para revisión manual.]`;
-        }
-        const r = await processText(transcript, f.name, 'audio', claudeKey, catalogCtx, hasLargeCatalog);
-        rows.push(...r);
-        log(`✓ ${r.length} líneas de ${f.name}`, 'ok');
-      } catch(e) { log(`✗ ${f.name}: ${e.message}`, 'err'); }
-    }
-
-    // Match products to catalog
-    log(`🔍 Verificando ${rows.length} líneas contra catálogo...`, 'info');
-    rows = rows.map(r => matchProduct(r));
-
-    log(`🎉 Listo — ${rows.length} líneas procesadas`, 'ok');
-    renderTable();
-    updateStats();
-
-  } catch(e) {
-    log(`Error general: ${e.message}`, 'err');
-    toast('Error durante el procesamiento', 'err');
-  }
-
-  setBtnProcessLoading(false);
-  isProcessing = false;
-}
-
-function setBtnProcessLoading(on) {
-  document.getElementById('btnProcess').disabled = on;
-  document.getElementById('btnProcessIcon').innerHTML = on ? '<span class="spin"></span>' : '⚡';
-  document.getElementById('btnProcessText').textContent = on ? 'Procesando...' : 'Procesar todos los archivos';
-}
-
-// ── CLAUDE API ───────────────────────────────────────────────
-const SYSTEM_PROMPT = (catalogCtx, hasMore) => `Eres un asistente experto en extracción de pedidos de ventas para la empresa Temponovo.
-
-CATÁLOGO DE PRODUCTOS DISPONIBLES (formato CÓDIGO|NOMBRE):
-${catalogCtx}
-${hasMore ? '... (hay más productos, usa tu mejor criterio para los que no aparecen aquí)' : ''}
-
-Tu tarea: extraer TODAS las líneas de pedido del contenido dado.
-
-Reglas:
-- Cada línea es: un cliente, un producto, una cantidad
-- El producto DEBE ser mapeado al código del catálogo. Busca el más parecido aunque el cliente use apodos o nombres parciales
-- Si no encuentras el producto en el catálogo, usa el nombre que mencionó el cliente como código y pon confidence:"low"
-- Si el producto está claramente en el catálogo, confidence:"high"
-- Si hay duda pero encontraste algo parecido, confidence:"medium"
-- Un pedido puede tener múltiples productos → múltiples filas
-- Un archivo puede tener múltiples clientes → múltiples grupos de filas
-
-Devuelve ÚNICAMENTE un JSON array sin markdown, sin texto extra. Cada elemento:
-{
-  "cliente": "nombre del cliente",
-  "codigo": "CÓDIGO-DEL-CATALOGO o nombre-libre-si-no-encontrado",
-  "nombre_producto": "nombre legible del producto",
-  "cantidad": 1.0,
-  "confidence": "high|medium|low",
-  "nota_ia": "nota si hubo duda o algo relevante"
-}`;
-
-async function callClaude(messages, claudeKey, catalogCtx, hasMore) {
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': claudeKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
-      system: SYSTEM_PROMPT(catalogCtx, hasMore),
-      messages
-    })
-  });
-
-  if (!resp.ok) {
-    const e = await resp.json().catch(() => ({}));
-    throw new Error(e.error?.message || `HTTP ${resp.status}`);
-  }
-
-  const data = await resp.json();
-  const raw = data.content.map(b => b.text || '').join('');
-  return parseJSON(raw);
-}
-
-function parseJSON(raw) {
-  const clean = raw.replace(/```[a-z]*\n?/g, '').replace(/```/g, '').trim();
-  try { return JSON.parse(clean); }
-  catch {
-    const m = clean.match(/\[[\s\S]*\]/);
-    if (!m) throw new Error('La IA no devolvió JSON válido');
-    return JSON.parse(m[0]);
-  }
-}
-
-async function processImage(file, claudeKey, catalogCtx, hasMore) {
-  const b64 = await toBase64(file);
-  const mediaType = file.type || 'image/jpeg';
-  const arr = await callClaude([{
-    role: 'user',
-    content: [
-      { type: 'image', source: { type: 'base64', media_type: mediaType, data: b64 } },
-      { type: 'text', text: `Extrae todos los pedidos de esta imagen. Archivo: ${file.name}` }
-    ]
-  }], claudeKey, catalogCtx, hasMore);
-  return arr.map(r => ({ ...r, source: 'foto', file: file.name, rejected: false }));
-}
-
-async function processExcelFile(file, claudeKey, catalogCtx, hasMore) {
-  const data = await file.arrayBuffer();
-  const wb = XLSX.read(data, { type: 'array' });
-  let text = '';
-  wb.SheetNames.forEach(name => {
-    const ws = wb.Sheets[name];
-    text += `\n--- Hoja: ${name} ---\n` + XLSX.utils.sheet_to_csv(ws);
-  });
-  return processText(text, file.name, 'excel', claudeKey, catalogCtx, hasMore);
-}
-
-async function processText(text, filename, source, claudeKey, catalogCtx, hasMore) {
-  const arr = await callClaude([{
-    role: 'user',
-    content: [{ type: 'text', text: `Extrae todos los pedidos. Archivo: ${filename}\n\nContenido:\n${text}` }]
-  }], claudeKey, catalogCtx, hasMore);
-  return arr.map(r => ({ ...r, source, file: filename, rejected: false }));
-}
-
-// ── WHISPER ──────────────────────────────────────────────────
-async function transcribeAudio(file, openaiKey) {
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('model', 'whisper-1');
-  formData.append('language', 'es');
-
-  const resp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${openaiKey}` },
-    body: formData
-  });
-
-  if (!resp.ok) throw new Error(`Whisper error ${resp.status}`);
-  const data = await resp.json();
-  return data.text || '';
-}
-
-// ── PRODUCT MATCHING ─────────────────────────────────────────
-function matchProduct(row) {
-  if (!catalog.length) return { ...row, matchStatus: 'no-catalog' };
-
-  const code = (row.codigo || '').trim().toUpperCase();
-
-  // Exact match
-  const exact = catalog.find(p => p.code.toUpperCase() === code);
-  if (exact) return { ...row, codigo: exact.code, nombre_producto: exact.name, matchStatus: 'ok' };
-
-  // Partial code match
-  const partial = catalog.find(p =>
-    p.code.toUpperCase().includes(code) || code.includes(p.code.toUpperCase())
-  );
-  if (partial) return { ...row, codigo: partial.code, nombre_producto: partial.name, matchStatus: 'partial', confidence: 'medium' };
-
-  // Fuzzy name match
-  const nameLow = (row.nombre_producto || row.codigo || '').toLowerCase();
-  const nameMatch = catalog.find(p => {
-    const cl = p.name.toLowerCase();
-    return cl.includes(nameLow) || nameLow.includes(cl) || nameLow.split(' ').some(w => w.length > 3 && cl.includes(w));
-  });
-  if (nameMatch) return { ...row, codigo: nameMatch.code, nombre_producto: nameMatch.name, matchStatus: 'name-match', confidence: 'medium' };
-
-  return { ...row, matchStatus: 'not-found', confidence: 'low' };
-}
-
-// ── RENDER TABLE ─────────────────────────────────────────────
-function renderTable() {
-  document.getElementById('tableSection').style.display = 'block';
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-
-  if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-title">Sin líneas detectadas</div><div class="empty-sub">La IA no encontró pedidos en los archivos.</div></div></td></tr>`;
-    return;
-  }
-
-  rows.forEach((r, i) => renderRow(r, i));
-}
-
-function renderRow(r, i) {
-  const tbody = document.getElementById('tableBody');
-  const tr = document.createElement('tr');
-  tr.id = `row-${i}`;
-  if (r.rejected) tr.classList.add('row-rejected');
-
-  const matchBadge = {
-    'ok':         '<span class="badge badge-ok">✓ Exacto</span>',
-    'partial':    '<span class="badge badge-warn">~ Parcial</span>',
-    'name-match': '<span class="badge badge-warn">~ Por nombre</span>',
-    'not-found':  '<span class="badge badge-err">✗ No encontrado</span>',
-    'no-catalog': '<span class="badge" style="background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb">Sin catálogo</span>',
-  }[r.matchStatus] || '';
-
-  const confBadge = {
-    'high':   '<span class="badge badge-ok">Alta</span>',
-    'medium': '<span class="badge badge-warn">Media</span>',
-    'low':    '<span class="badge badge-err">Baja</span>',
-  }[r.confidence] || '';
-
-  const srcBadge = {
-    'foto':  '<span class="badge badge-foto">📸 Foto</span>',
-    'excel': '<span class="badge badge-excel">📊 Excel</span>',
-    'audio': '<span class="badge badge-audio">🎙 Audio</span>',
-  }[r.source] || r.source;
-
-  tr.innerHTML = `
-    <td style="color:var(--ink3);font-size:0.75rem;font-weight:600">${i+1}</td>
-    <td>${srcBadge}</td>
-    <td contenteditable="true" oninput="updateRow(${i},'cliente',this.textContent)">${esc(r.cliente||'')}</td>
-    <td>
-      <div class="prod-cell" style="position:relative">
-        <input class="prod-code ${prodInputClass(r)}" id="prodInput-${i}"
-               value="${esc(r.codigo||'')}"
-               oninput="onProdInput(${i},this)"
-               onblur="hideSuggestions(${i})"
-               autocomplete="off">
-        <div class="autocomplete-list" id="ac-${i}"></div>
-      </div>
-    </td>
-    <td style="color:var(--ink2);font-size:0.78rem">${esc(r.nombre_producto||'')}</td>
-    <td contenteditable="true" oninput="updateRow(${i},'cantidad',this.textContent)" style="text-align:right;font-weight:600">${r.cantidad??1}</td>
-    <td>${matchBadge} ${confBadge}${r.nota_ia ? `<br><span style="font-size:0.68rem;color:var(--ink3)">${esc(r.nota_ia)}</span>` : ''}</td>
-    <td>
-      <div class="row-actions">
-        ${r.rejected
-          ? `<button class="btn-row restore" onclick="restoreRow(${i})">↩ Restaurar</button>`
-          : `<button class="btn-row reject" onclick="rejectRow(${i})">✕ Rechazar</button>`
-        }
-      </div>
-    </td>
-  `;
-
-  tbody.appendChild(tr);
-}
-
-function prodInputClass(r) {
-  if (r.matchStatus === 'ok') return 'match-ok';
-  if (r.matchStatus === 'not-found') return 'match-err';
-  if (['partial','name-match'].includes(r.matchStatus)) return 'match-warn';
-  return '';
-}
-
-function updateRow(i, field, val) {
-  rows[i][field] = val.trim();
-}
-
-function rejectRow(i) {
-  rows[i].rejected = true;
-  document.getElementById(`row-${i}`).classList.add('row-rejected');
-  const td = document.querySelector(`#row-${i} td:last-child .row-actions`);
-  if (td) td.innerHTML = `<button class="btn-row restore" onclick="restoreRow(${i})">↩ Restaurar</button>`;
-  updateStats();
-}
-
-function restoreRow(i) {
-  rows[i].rejected = false;
-  document.getElementById(`row-${i}`).classList.remove('row-rejected');
-  const td = document.querySelector(`#row-${i} td:last-child .row-actions`);
-  if (td) td.innerHTML = `<button class="btn-row reject" onclick="rejectRow(${i})">✕ Rechazar</button>`;
-  updateStats();
-}
-
-function clearRejected() {
-  rows = rows.filter(r => !r.rejected);
-  renderTable();
-  updateStats();
-  toast('Filas rechazadas eliminadas', 'ok');
-}
-
-function addEmptyRow() {
-  rows.push({ cliente: '', codigo: '', nombre_producto: '', cantidad: 1, source: 'manual', confidence: 'high', matchStatus: 'no-catalog', rejected: false });
-  renderTable();
-  updateStats();
-}
-
-function updateStats() {
-  const active = rows.filter(r => !r.rejected);
-  document.getElementById('statTotal').textContent = active.length;
-  document.getElementById('statOk').textContent = active.filter(r => r.matchStatus === 'ok').length;
-  document.getElementById('statWarn').textContent = active.filter(r => ['partial','name-match'].includes(r.matchStatus)).length;
-  document.getElementById('statErr').textContent = active.filter(r => r.matchStatus === 'not-found').length;
-  document.getElementById('statsBar').style.display = 'grid';
-}
-
-// ── AUTOCOMPLETE ─────────────────────────────────────────────
-function onProdInput(i, input) {
-  const val = input.value.trim().toUpperCase();
-  rows[i].codigo = val;
-
-  const ac = document.getElementById(`ac-${i}`);
-
-  if (!val || val.length < 2 || !catalog.length) {
-    ac.classList.remove('open');
-    return;
-  }
-
-  const matches = catalog.filter(p =>
-    p.code.toUpperCase().includes(val) ||
-    p.name.toLowerCase().includes(val.toLowerCase())
-  ).slice(0, 12);
-
-  if (!matches.length) { ac.classList.remove('open'); return; }
-
-  ac.innerHTML = matches.map((p, idx) => `
-    <div class="ac-item" onmousedown="selectProduct(${i},'${esc(p.code)}','${esc(p.name)}')" data-idx="${idx}">
-      <span class="ac-code">${p.code}</span>
-      <span class="ac-name">${p.name}</span>
-    </div>
-  `).join('');
-
-  ac.classList.add('open');
-}
-
-function selectProduct(i, code, name) {
-  rows[i].codigo = code;
-  rows[i].nombre_producto = name;
-  rows[i].matchStatus = 'ok';
-  rows[i].confidence = 'high';
-
-  const input = document.getElementById(`prodInput-${i}`);
-  if (input) {
-    input.value = code;
-    input.className = 'prod-code match-ok';
-  }
-
-  // Update name cell
-  const tr = document.getElementById(`row-${i}`);
-  if (tr) {
-    const cells = tr.querySelectorAll('td');
-    if (cells[4]) cells[4].textContent = name;
-  }
-
-  hideSuggestions(i);
-  updateStats();
-}
-
-function hideSuggestions(i) {
-  setTimeout(() => {
-    const ac = document.getElementById(`ac-${i}`);
-    if (ac) ac.classList.remove('open');
-  }, 200);
-}
-
-// ── DOWNLOAD ─────────────────────────────────────────────────
-function downloadExcel() {
-  const active = rows.filter(r => !r.rejected);
-
-  if (!active.length) { toast('No hay líneas para exportar', 'warn'); return; }
-
-  // Build Odoo format: Cliente | Código producto | Cantidad
-  // First row of each client group has the client name; rest empty
-  const odooRows = [['Cliente', 'Líneas del pedido/Producto/Referencia interna', 'Líneas del pedido/Cantidad']];
-
-  // Group by client
-  const grouped = {};
-  active.forEach(r => {
-    const cl = (r.cliente || 'SIN CLIENTE').trim();
-    if (!grouped[cl]) grouped[cl] = [];
-    grouped[cl].push(r);
-  });
-
-  Object.entries(grouped).forEach(([client, lines]) => {
-    lines.forEach((r, idx) => {
-      odooRows.push([
-        idx === 0 ? client : null,
-        r.codigo || '',
-        parseFloat(r.cantidad) || 1
-      ]);
-    });
-  });
-
-  const ws = XLSX.utils.aoa_to_sheet(odooRows);
-  ws['!cols'] = [{wch:32},{wch:28},{wch:12}];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Pedidos');
-
-  const date = new Date().toISOString().slice(0,10);
-  XLSX.writeFile(wb, `pedidos_odoo_${date}.xlsx`);
-  toast(`Excel exportado: ${active.length} líneas ✓`, 'ok');
-}
-
-// ── HELPERS ──────────────────────────────────────────────────
-function toBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result.split(',')[1]);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
-}
-
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-function log(msg, type='info') {
-  const el = document.getElementById('logEntries');
-  const ts = new Date().toLocaleTimeString('es', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const div = document.createElement('div');
-  div.className = `log-line ${type}`;
-  div.innerHTML = `<span class="ts">${ts}</span><span class="msg">${msg}</span>`;
-  el.appendChild(div);
-  el.scrollTop = el.scrollHeight;
-}
-
-let toastT;
-function toast(msg, type='ok') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = `toast ${type} show`;
-  clearTimeout(toastT);
-  toastT = setTimeout(() => el.classList.remove('show'), 3500);
-}
-
-// ── AUTO-CONNECT on load ──────────────────────────────────────
-window.addEventListener('load', () => {
-  const saved = localStorage.getItem('proxy_url');
-  if (saved) {
-    document.getElementById('odooUrl').value = saved;
-    log(`URL del proxy restaurada: ${saved}`, 'info');
-  }
-  log('Portal listo. Ingresa la URL del proxy de Render y conecta.', 'info');
+let PROXY=localStorage.getItem('tn_proxy')||'';
+let catalog=[],customers=[],selectedClient=null,currentFile=null,currentFileType=null,rows=[];
+
+window.addEventListener('load',async()=>{
+  const saved=localStorage.getItem('tn_proxy');
+  if(saved){document.getElementById('proxyUrl').value=saved;await initProxy(true);}
+  else{setStatus('Ingresa la URL del proxy');}
 });
+
+async function initProxy(silent=false){
+  const url=document.getElementById('proxyUrl').value.trim().replace(/\/$/,'');
+  if(!url){toast('Ingresa la URL del proxy','err');return;}
+  PROXY=url;
+  const btn=document.getElementById('btnInit');
+  btn.textContent='Conectando...';btn.disabled=true;
+  try{
+    const h=await fetchJSON(PROXY+'/');
+    if(h.status!=='ok')throw new Error('Proxy no responde');
+    setStatus('Cargando catálogo...');
+    const cat=await fetchJSON(PROXY+'/catalog');
+    if(!cat.ok)throw new Error(cat.detail||'Error catálogo');
+    catalog=cat.products;
+    const cust=await fetchJSON(PROXY+'/customers');
+    if(cust.ok)customers=cust.customers;
+    localStorage.setItem('tn_proxy',PROXY);
+    setStatus(catalog.length+' productos · listo',true);
+    document.getElementById('setupCard').style.display='none';
+    document.getElementById('stepsBar').style.display='flex';
+    document.getElementById('cardUpload').style.display='block';
+    setStep(1);
+    if(!silent)toast('Conectado · '+catalog.length+' productos ✓','ok');
+  }catch(e){setStatus('Error de conexión');toast(e.message,'err');}
+  btn.textContent='Conectar';btn.disabled=false;
+}
+
+function handleDrop(e,type){
+  e.preventDefault();
+  document.getElementById('zone'+cap(type)).classList.remove('dragover');
+  const f=e.dataTransfer.files[0];
+  if(f)setFile(type,f);
+}
+
+function handleFile(type,input){
+  const f=input.files[0];
+  if(f)setFile(type,f);
+  input.value='';
+}
+
+function setFile(type,file){
+  if(type==='photo')clearFileZone('excel');else clearFileZone('photo');
+  currentFile=file;currentFileType=type;
+  const zone=document.getElementById('zone'+cap(type));
+  const content=document.getElementById('zone'+cap(type)+'Content');
+  zone.classList.add('has-file');zone.onclick=null;
+  if(type==='photo'){
+    const url=URL.createObjectURL(file);
+    content.innerHTML='<div class="file-preview"><img class="file-thumb" src="'+url+'"><div class="file-info"><div class="file-name">'+esc(file.name)+'</div><div class="file-size">'+(file.size/1024).toFixed(0)+' KB</div></div><button class="btn-remove" onclick="event.stopPropagation();clearFileZone(\'photo\')">✕</button></div>';
+  }else{
+    content.innerHTML='<div class="file-preview"><div class="file-thumb excel-thumb">📊</div><div class="file-info"><div class="file-name">'+esc(file.name)+'</div><div class="file-size">'+(file.size/1024).toFixed(0)+' KB</div></div><button class="btn-remove" onclick="event.stopPropagation();clearFileZone(\'excel\')">✕</button></div>';
+  }
+  document.getElementById('btnProcess').disabled=false;
+}
+
+function clearFileZone(type){
+  const zone=document.getElementById('zone'+cap(type));
+  const content=document.getElementById('zone'+cap(type)+'Content');
+  zone.classList.remove('has-file','dragover');
+  zone.onclick=()=>document.getElementById('input'+cap(type)).click();
+  if(type==='photo'){content.innerHTML='<div class="upload-icon">📸</div><div class="upload-title">Foto del pedido</div><div class="upload-hint">JPG, PNG, WEBP · arrastra o haz clic</div>';}
+  else{content.innerHTML='<div class="upload-icon">📊</div><div class="upload-title">Excel del pedido</div><div class="upload-hint">XLS, XLSX, CSV · arrastra o haz clic</div>';}
+  if(currentFileType===type){currentFile=null;currentFileType=null;document.getElementById('btnProcess').disabled=true;}
+}
+
+async function processFile(){
+  if(!currentFile)return;
+  document.getElementById('cardUpload').style.display='none';
+  document.getElementById('cardProcessing').style.display='block';
+  setStep(2);
+  try{
+    let rawRows=[];
+    if(currentFileType==='photo'){
+      document.getElementById('processingTitle').textContent='Leyendo la foto...';
+      document.getElementById('processingSub').textContent='Claude está analizando la imagen y buscando los productos en el catálogo';
+      const fd=new FormData();
+      fd.append('file',currentFile);
+      fd.append('catalog_json',JSON.stringify(catalog));
+      const resp=await fetch(PROXY+'/process-image',{method:'POST',body:fd});
+      const data=await resp.json();
+      if(!data.ok)throw new Error(data.detail||'Error procesando imagen');
+      rawRows=data.rows;
+    }else{
+      document.getElementById('processingTitle').textContent='Leyendo el Excel...';
+      document.getElementById('processingSub').textContent='Claude está interpretando las columnas y mapeando los productos';
+      const text=await readExcelAsText(currentFile);
+      const resp=await fetch(PROXY+'/process-text',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text,filename:currentFile.name,catalog_json:JSON.stringify(catalog)})});
+      const data=await resp.json();
+      if(!data.ok)throw new Error(data.detail||'Error procesando Excel');
+      rawRows=data.rows;
+    }
+    rows=rawRows.map(r=>({...r,source:currentFileType,rejected:false,matchStatus:getMatchStatus(r.codigo,r.confidence)}));
+    const firstClient=rawRows.find(r=>r.cliente&&r.cliente.trim())?.cliente?.trim();
+    document.getElementById('cardProcessing').style.display='none';
+    showClientStep(firstClient);
+  }catch(e){
+    document.getElementById('cardProcessing').style.display='none';
+    document.getElementById('cardUpload').style.display='block';
+    toast('Error: '+e.message,'err');setStep(1);
+  }
+}
+
+function showClientStep(suggested){
+  document.getElementById('cardClient').style.display='block';
+  setStep(2);
+  if(suggested){document.getElementById('clientSearch').value=suggested;searchClients(suggested);}
+}
+
+let cst;
+async function searchClients(q){
+  clearTimeout(cst);
+  const dd=document.getElementById('clientDd');
+  if(!q||q.length<2){dd.classList.remove('open');return;}
+  cst=setTimeout(async()=>{
+    try{
+      const local=customers.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())).slice(0,20);
+      if(local.length){renderClientDd(local);}
+      else{const data=await fetchJSON(PROXY+'/customers?q='+encodeURIComponent(q));if(data.ok)renderClientDd(data.customers);}
+    }catch(e){}
+  },250);
+}
+
+function renderClientDd(list){
+  const dd=document.getElementById('clientDd');
+  if(!list.length){dd.innerHTML='<div class="dd-empty">Sin resultados</div>';}
+  else{dd.innerHTML=list.map(c=>'<div class="dd-item" onmousedown="selectClient('+c.id+',\''+esc(c.name)+'\',\''+esc(c.ref||'')+'\')"><div class="dd-name">'+esc(c.name)+'</div>'+(c.ref?'<div class="dd-ref">Ref: '+esc(c.ref)+'</div>':'')+'</div>').join('');}
+  dd.classList.add('open');
+}
+
+function selectClient(id,name,ref){
+  selectedClient={id,name,ref};
+  document.getElementById('clientSearchWrap').innerHTML='<div class="client-selected"><div class="client-selected-name">✓ '+esc(name)+'</div><button class="btn-remove" onclick="clearClient()">✕</button></div>';
+  document.getElementById('btnConfirmClient').disabled=false;
+}
+
+function clearClient(){
+  selectedClient=null;
+  document.getElementById('clientSearchWrap').innerHTML='<input type="text" id="clientSearch" placeholder="Escribe el nombre del cliente..." oninput="searchClients(this.value)" onblur="setTimeout(()=>closeClientDd(),200)" autocomplete="off"><div class="dropdown" id="clientDd"></div>';
+  document.getElementById('btnConfirmClient').disabled=true;
+}
+
+function closeClientDd(){const dd=document.getElementById('clientDd');if(dd)dd.classList.remove('open');}
+
+function confirmClient(){
+  if(!selectedClient)return;
+  rows=rows.map(r=>({...r,cliente:selectedClient.name}));
+  document.getElementById('cardClient').style.display='none';
+  showReview();
+}
+
+function showReview(){
+  document.getElementById('cardReview').style.display='block';
+  document.getElementById('newOrderBtn').style.display='block';
+  setStep(3);renderReview();updateSummary();
+}
+
+function renderReview(){
+  const tbody=document.getElementById('reviewBody');tbody.innerHTML='';
+  rows.forEach((r,i)=>{
+    const tr=document.createElement('tr');tr.id='tr-'+i;
+    if(r.rejected)tr.classList.add('rejected');
+    const cb={'high':'<span class="badge badge-ok">✓ Alta</span>','medium':'<span class="badge badge-med">~ Media</span>','low':'<span class="badge badge-low">✗ Baja</span>'}[r.confidence]||'';
+    tr.innerHTML='<td style="color:var(--ink3);font-weight:700;font-size:.75rem">'+(i+1)+'</td><td><div class="prod-wrap"><input class="prod-input '+prodClass(r)+'" id="pi-'+i+'" value="'+esc(r.codigo||'')+'" oninput="onProdInput('+i+',this)" onblur="setTimeout(()=>closeProdDd('+i+'),180)" autocomplete="off"><div class="prod-dropdown" id="pd-'+i+'"></div></div></td><td style="color:var(--ink2);font-size:.8rem;max-width:200px" id="pname-'+i+'">'+esc(r.nombre_producto||'')+'</td><td><input class="qty-input" value="'+(r.cantidad||1)+'" type="number" min="0.01" step="any" onchange="rows['+i+'].cantidad=parseFloat(this.value)||1;updateSummary()"></td><td>'+cb+(r.nota_ia?'<br><span style="font-size:.68rem;color:var(--ink3)">'+esc(r.nota_ia)+'</span>':'')+'</td><td>'+(r.rejected?'<button class="btn-row-action restore" onclick="restoreRow('+i+')">↩</button>':'<button class="btn-row-action del" onclick="rejectRow('+i+')">✕</button>')+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function prodClass(r){if(r.matchStatus==='ok')return 'ok';if(['partial','name'].includes(r.matchStatus))return 'warn';if(r.matchStatus==='not-found')return 'err';return '';}
+
+function getMatchStatus(code,confidence){
+  if(!catalog.length)return 'no-catalog';
+  const c=(code||'').trim().toUpperCase();
+  if(catalog.find(p=>p.code.toUpperCase()===c))return 'ok';
+  if(catalog.find(p=>p.code.toUpperCase().includes(c)||c.includes(p.code.toUpperCase())))return 'partial';
+  if(confidence==='high')return 'ok';
+  if(confidence==='medium')return 'partial';
+  return 'not-found';
+}
+
+function onProdInput(i,input){
+  const val=input.value.trim();rows[i].codigo=val;
+  const pd=document.getElementById('pd-'+i);
+  if(!val||val.length<2){pd.classList.remove('open');return;}
+  const matches=catalog.filter(p=>p.code.toUpperCase().includes(val.toUpperCase())||p.name.toLowerCase().includes(val.toLowerCase())).slice(0,10);
+  if(!matches.length){pd.classList.remove('open');return;}
+  pd.innerHTML=matches.map(p=>'<div class="pd-item" onmousedown="selectProd('+i+',\''+esc(p.code)+'\',\''+esc(p.name)+'\')"><div class="pd-code">'+p.code+'</div><div class="pd-name">'+p.name+'</div></div>').join('');
+  pd.classList.add('open');
+}
+
+function selectProd(i,code,name){
+  rows[i].codigo=code;rows[i].nombre_producto=name;rows[i].matchStatus='ok';rows[i].confidence='high';
+  const inp=document.getElementById('pi-'+i);if(inp){inp.value=code;inp.className='prod-input ok';}
+  const pn=document.getElementById('pname-'+i);if(pn)pn.textContent=name;
+  closeProdDd(i);updateSummary();
+}
+
+function closeProdDd(i){const pd=document.getElementById('pd-'+i);if(pd)pd.classList.remove('open');}
+
+function rejectRow(i){
+  rows[i].rejected=true;
+  document.getElementById('tr-'+i)?.classList.add('rejected');
+  const td=document.querySelector('#tr-'+i+' td:last-child');
+  if(td)td.innerHTML='<button class="btn-row-action restore" onclick="restoreRow('+i+')">↩</button>';
+  updateSummary();
+}
+
+function restoreRow(i){
+  rows[i].rejected=false;
+  document.getElementById('tr-'+i)?.classList.remove('rejected');
+  const td=document.querySelector('#tr-'+i+' td:last-child');
+  if(td)td.innerHTML='<button class="btn-row-action del" onclick="rejectRow('+i+')">✕</button>';
+  updateSummary();
+}
+
+function clearRejected(){rows=rows.filter(r=>!r.rejected);renderReview();updateSummary();toast('Filas rechazadas eliminadas','ok');}
+
+function addEmptyRow(){
+  rows.push({cliente:selectedClient?.name||'',codigo:'',nombre_producto:'',cantidad:1,confidence:'high',matchStatus:'no-catalog',rejected:false});
+  renderReview();updateSummary();
+  setTimeout(()=>document.getElementById('pi-'+(rows.length-1))?.focus(),50);
+}
+
+function updateSummary(){
+  const active=rows.filter(r=>!r.rejected);
+  const ok=active.filter(r=>r.matchStatus==='ok').length;
+  const warn=active.filter(r=>['partial','name'].includes(r.matchStatus)).length;
+  const bad=active.filter(r=>r.matchStatus==='not-found').length;
+  document.getElementById('summaryRow').innerHTML='<div class="sum-pill"><div class="sum-val">'+active.length+'</div><div class="sum-label">Total</div></div><div class="sum-pill"><div class="sum-val ok">'+ok+'</div><div class="sum-label">Exactos</div></div><div class="sum-pill"><div class="sum-val warn">'+warn+'</div><div class="sum-label">Revisar</div></div><div class="sum-pill"><div class="sum-val bad">'+bad+'</div><div class="sum-label">No encontrados</div></div>';
+}
+
+function downloadExcel(){
+  const active=rows.filter(r=>!r.rejected&&r.codigo);
+  if(!active.length){toast('No hay líneas para exportar','warn');return;}
+  const clientName=selectedClient?.name||active[0]?.cliente||'CLIENTE';
+  const data=[['Cliente','Líneas del pedido/Producto/Referencia interna','Líneas del pedido/Cantidad']];
+  active.forEach((r,i)=>data.push([i===0?clientName:null,r.codigo,parseFloat(r.cantidad)||1]));
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  ws['!cols']=[{wch:32},{wch:28},{wch:12}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Pedido');
+  const safe=clientName.replace(/[^a-zA-Z0-9]/g,'_').slice(0,30);
+  const date=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,'pedido_'+safe+'_'+date+'.xlsx');
+  setStep(4);toast('Excel descargado · '+active.length+' líneas ✓','ok');
+}
+
+function resetAll(){
+  rows=[];selectedClient=null;currentFile=null;currentFileType=null;
+  clearFileZone('photo');clearFileZone('excel');
+  document.getElementById('cardClient').style.display='none';
+  document.getElementById('cardReview').style.display='none';
+  document.getElementById('newOrderBtn').style.display='none';
+  document.getElementById('cardUpload').style.display='block';
+  document.getElementById('btnProcess').disabled=true;
+  clearClient();setStep(1);
+}
+
+async function readExcelAsText(file){
+  const data=await file.arrayBuffer();
+  const wb=XLSX.read(data,{type:'array'});
+  let text='';
+  wb.SheetNames.forEach(name=>{text+='\n--- Hoja: '+name+' ---\n'+XLSX.utils.sheet_to_csv(wb.Sheets[name]);});
+  return text;
+}
+
+async function fetchJSON(url){const r=await fetch(url);if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}
+function cap(s){return s[0].toUpperCase()+s.slice(1);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function setStatus(text,ok=false){document.getElementById('statusText').textContent=text;document.getElementById('statusPill').className='status-pill'+(ok?' ok':'');}
+function setStep(n){for(let i=1;i<=4;i++){const el=document.getElementById('step'+i);if(!el)continue;el.className='step'+(i===n?' active':i<n?' done':'');}}
+let toastT;
+function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className='toast '+type+' show';clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3500);}
 </script>
 </body>
 </html>
