@@ -81,7 +81,7 @@ header{background:#fff;border-bottom:3px solid var(--teal);padding:0 1.5rem;heig
 .dd-wrap input::placeholder{color:var(--ink3)}
 .selected-client{display:flex;align-items:center;justify-content:space-between;background:var(--teal-bg);border:1.5px solid var(--teal-bd);border-radius:var(--r);padding:.62rem .85rem}
 .sel-name{font-weight:700;color:var(--teal);font-size:.88rem}
-.dropdown{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--sur2);border:1px solid var(--bor2);border-radius:10px;box-shadow:var(--shm);z-index:100;max-height:260px;overflow-y:auto;display:none}
+.dropdown{position:fixed;background:var(--sur2);border:1px solid var(--bor2);border-radius:10px;box-shadow:var(--shm);z-index:999;max-height:260px;overflow-y:auto;display:none;min-width:300px}
 .dropdown.open{display:block}
 .ddi{padding:.58rem .85rem;cursor:pointer;border-bottom:1px solid var(--bor);transition:background .1s}
 .ddi:last-child{border-bottom:none}.ddi:hover{background:var(--teal-bg)}
@@ -109,7 +109,7 @@ td{padding:.5rem .8rem;vertical-align:middle}
 .pi.ok{border-color:var(--teal);background:var(--teal-bg);color:var(--teal)}
 .pi.warn{border-color:var(--yel);background:var(--yel-bg);color:var(--yel)}
 .pi.err{border-color:var(--red);background:var(--red-bg);color:var(--red)}
-.pdd{position:absolute;top:calc(100% + 3px);left:0;background:var(--sur2);border:1px solid var(--bor2);border-radius:8px;box-shadow:var(--shm);z-index:200;max-height:190px;overflow-y:auto;min-width:275px;display:none}
+.pdd{position:fixed;background:var(--sur2);border:1px solid var(--bor2);border-radius:8px;box-shadow:var(--shm);z-index:999;max-height:190px;overflow-y:auto;min-width:275px;display:none}
 .pdd.open{display:block}
 .pdi{padding:.45rem .72rem;cursor:pointer;border-bottom:1px solid var(--bor);transition:background .1s}
 .pdi:last-child{border-bottom:none}.pdi:hover{background:var(--teal-bg)}
@@ -584,6 +584,14 @@ function filterClients(q) {
        </div>`
     ).join('');
   }
+  // Position using fixed coords
+  const inp = document.getElementById('clientInput');
+  if (inp) {
+    const rect = inp.getBoundingClientRect();
+    dd.style.top = (rect.bottom + 4) + 'px';
+    dd.style.left = rect.left + 'px';
+    dd.style.width = rect.width + 'px';
+  }
   dd.classList.add('open');
 }
 
@@ -682,6 +690,11 @@ function onPi(i, inp) {
       <div class="pdi-name">${p.name}</div>
      </div>`
   ).join('');
+  // Position using fixed coords
+  const rect = inp.getBoundingClientRect();
+  pd.style.top = (rect.bottom + 3) + 'px';
+  pd.style.left = rect.left + 'px';
+  pd.style.width = '280px';
   pd.classList.add('open');
 }
 
