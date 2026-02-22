@@ -467,10 +467,10 @@ async function processAll() {
 
     // ── TXT web (formato semicolón) ──
     if (taVal && /CANT\.;/.test(taVal)) {
-      setProc('Procesando TXT web...', 'Formato Temponovo detectado — instantáneo, sin IA');
-      const r = await post(PROXY + '/process-txt', { text: taVal, filename: 'web-paste.txt' });
-      if (!r.ok) throw new Error(r.detail);
-      allRows = r.rows;
+      setProc('Procesando TXT web...', 'Formato Temponovo detectado — leyendo códigos directamente');
+      // Parse client-side directly — no server needed for structured format
+      allRows = parseTxtWeb(taVal);
+      if (!allRows.length) throw new Error('No se encontraron productos en el TXT');
 
     // ── Texto libre (WhatsApp, email, etc.) ──
     } else if (taVal) {
@@ -828,6 +828,33 @@ function resetAll() {
   clearClient();
   setStep(1);
   updateCorrBadge();
+}
+
+// ── CLIENT-SIDE TXT PARSER ───────────────────────────────────────
+function parseTxtWeb(text) {
+  const rows = [];
+  // Extract client
+  let cliente = '';
+  const rsm = text.match(/R\.\s*SOCIAL;([^;]*)/);
+  if (rsm && rsm[1].trim()) cliente = rsm[1].trim();
+  if (!cliente) { const em = text.match(/EMAIL;([^;]*)/); if (em) cliente = em[1].trim(); }
+  if (!cliente) { const tm = text.match(/TELEFONO;([^;]*)/); if (tm) cliente = tm[1].trim(); }
+
+  // Extract product blocks: CANT.;N;COD. TN;CODE;...
+  const pattern = /CANT\.;(\d+(?:[.,]\d+)?);COD\. TN;([^;]+);(?:COD\. PROV\.;[^;]*;)?DESCRIPCION;([^;]+);PRECIO;(\d+)/g;
+  let m;
+  while ((m = pattern.exec(text)) !== null) {
+    rows.push({
+      cliente,
+      codigo:          m[2].trim(),
+      nombre_producto: m[3].trim(),
+      cantidad:        parseFloat(m[1].replace(',','.')),
+      precio:          parseFloat(m[4]),
+      confidence:      'high',
+      nota_ia:         null
+    });
+  }
+  return rows;
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────

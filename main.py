@@ -102,20 +102,46 @@ def get_customers(q: str = "", limit: int = 2000):
 
 
 # ── Prompt base ──────────────────────────────────────────────────
-BASE_PROMPT = """Eres un asistente experto en extracción de pedidos para Temponovo, distribuidora Casio en Chile.
+BASE_PROMPT = """Eres un sistema OCR especializado en pedidos de relojes y calculadoras Casio para Temponovo, Chile.
 
-Extrae TODAS las líneas de pedido del contenido recibido.
+Tu única tarea: extraer líneas de pedido y mapear cada producto al código exacto del catálogo.
 
-Reglas:
-- Busca en el catálogo el código que mejor coincida con lo mencionado
-- Si encuentras código exacto → confidence: "high"
-- Si es aproximado → confidence: "medium"
-- Si no encuentras nada → usa el texto original como código, confidence: "low"
-- Una fila por producto
-- Si aparece el nombre del cliente, inclúyelo
+═══ CONTEXTO DEL NEGOCIO ═══
+- Los códigos Temponovo empiezan con CS- (relojes) o CA- (calculadoras)
+- Formato típico: CS-F91W1U, CS-AE1200WH1B, CA-FX82LATX
+- Los clientes a veces escriben solo el modelo Casio: "F-91W", "AE-1200", "fx-82"
+- Precios en CLP: entre $5.000 y $500.000
+- Cantidades: casi siempre números enteros pequeños (1-50)
 
-Responde ÚNICAMENTE con un JSON array, sin markdown, sin texto extra:
-[{"cliente":"","codigo":"","nombre_producto":"","cantidad":1,"confidence":"high","nota_ia":null}]"""
+═══ PARA IMÁGENES (OCR) ═══
+Lee con atención:
+1. Busca CANTIDADES: números solos, "x2", "cant:", "qty", "c/u"
+2. Busca CÓDIGOS: texto alfanumérico que parezca referencia de producto
+3. Busca PRECIOS: números grandes con puntos/comas (ej: 24.300, $24300)
+4. Si hay tabla: cada fila es un producto
+5. Si hay lista: cada ítem con número es un producto
+6. Texto borroso o rotado: intenta igual, pon nota_ia si hay duda
+7. Si ves "F91W", "A168", "AE1200" etc → busca el código CS- correspondiente en el catálogo
+
+═══ PARA TEXTO LIBRE (WhatsApp, email) ═══
+Interpreta lenguaje natural:
+- "necesito 5 f91w" → busca CS-F91W1U, cantidad 5
+- "me mandas 2 docenas del reloj digital chico" → busca relojes digitales básicos
+- Números antes del producto = cantidad
+- Si menciona precio, inclúyelo
+
+═══ MAPEO AL CATÁLOGO ═══
+- Coincidencia exacta de código → confidence: "high"
+- Código parcial o modelo sin prefijo → confidence: "medium"  
+- Solo descripción o no encontrado → confidence: "low"
+- SIEMPRE prefiere un código del catálogo sobre inventar uno
+
+═══ CORRECCIONES APRENDIDAS ═══
+Si recibes correcciones previas de Natalia, úsalas con máxima prioridad.
+Ejemplo: si "SR2032" fue corregido a "MA-SR2032", aplica eso siempre.
+
+Responde ÚNICAMENTE con JSON array, sin markdown, sin explicaciones:
+[{"cliente":"","codigo":"CS-XXXX","nombre_producto":"Nombre legible","cantidad":1,"precio":0,"confidence":"high","nota_ia":null}]"""
 
 def build_system(catalog: list, corrections_ctx: str = "") -> str:
     cat_text = "\n".join(f"{p['code']}|{p['name']}" for p in catalog[:1200])
@@ -158,7 +184,16 @@ async def process_image(
                     "system": system,
                     "messages": [{"role": "user", "content": [
                         {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": img_b64}},
-                        {"type": "text", "text": f"Extrae todos los pedidos de esta imagen. Archivo: {file.filename}"}
+                        {"type": "text", "text": f"""Imagen de pedido: {file.filename}
+
+INSTRUCCIONES OCR:
+1. Lee TODOS los números visibles — pueden ser cantidades, códigos o precios
+2. Identifica cada producto mencionado
+3. Para cada producto: cantidad + código del catálogo + precio si aparece
+4. Si hay texto borroso, intenta leerlo y pon nota_ia con tu nivel de certeza
+5. Extrae el nombre del cliente si aparece (membrete, firma, campo 'cliente', etc.)
+
+Responde solo con el JSON array."""}
                     ]}]
                 }
             )
@@ -195,7 +230,13 @@ async def process_text(req: TextRequest):
                     "model": "claude-sonnet-4-20250514",
                     "max_tokens": 4000,
                     "system": system,
-                    "messages": [{"role": "user", "content": f"Extrae todos los pedidos. Archivo: {req.filename}\n\nContenido:\n{req.text}"}]
+                    "messages": [{"role": "user", "content": f"""Pedido en texto: {req.filename}
+
+CONTENIDO:
+{req.text}
+
+Extrae todas las líneas de pedido. Si es texto informal (WhatsApp/email), interpreta el lenguaje natural.
+Responde solo con el JSON array."""}]
                 }
             )
         if not resp.is_success:
