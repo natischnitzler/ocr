@@ -497,6 +497,20 @@ async function processAll() {
 
     const sugClient = allRows.find(r => r.cliente?.trim())?.cliente?.trim() || '';
     document.getElementById('cardProc').style.display = 'none';
+
+    // Try to auto-match client from Odoo — if found, skip client step
+    if (sugClient) {
+      const sl = sugClient.toLowerCase().trim();
+      const exact = allCustomers.find(cx => cx.name.toLowerCase().trim() === sl);
+      if (exact) {
+        selClient = { id: exact.id, name: exact.name, ref: exact.ref || '' };
+        rows = rows.map(r => ({ ...r, cliente: exact.name }));
+        showReview();
+        toast('Cliente: ' + exact.name, 'ok');
+        return;
+      }
+    }
+
     showClientStep(sugClient);
 
   } catch(e) {
@@ -542,6 +556,15 @@ function showClientStep(suggested) {
   document.getElementById('cardClient').style.display = 'block';
   setStep(2);
   if (suggested) {
+    // Try to auto-match exact client from Odoo list
+    const sl = suggested.toLowerCase().trim();
+    const exact = allCustomers.find(c => c.name.toLowerCase().trim() === sl);
+    if (exact) {
+      // Auto-select — skip the search step entirely
+      pickClient(exact.id, exact.name, exact.ref || '');
+      return;
+    }
+    // No exact match — pre-fill search input and show results
     document.getElementById('clientInput').value = suggested;
     filterClients(suggested);
   }
