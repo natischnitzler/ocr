@@ -94,7 +94,7 @@ header{background:#fff;border-bottom:3px solid var(--teal);padding:0 1.5rem;heig
 .proc-title{font-weight:700;font-size:.95rem;margin-bottom:.35rem}.proc-sub{color:var(--ink3);font-size:.82rem}
 /* TABLE */
 .tscroll{overflow-x:auto;border-radius:0 0 12px 12px}
-table{width:100%;border-collapse:collapse;font-size:.82rem}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
 thead th{background:var(--sur2);padding:.58rem .8rem;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);border-bottom:1px solid var(--bor2);white-space:nowrap}
 thead th:first-child{border-left:3px solid var(--teal)}
 tbody tr{border-bottom:1px solid var(--bor);transition:background .1s}
@@ -102,9 +102,9 @@ tbody tr:last-child{border-bottom:none}
 tbody tr:hover{background:rgba(0,168,150,.05)}
 tbody tr.rej{opacity:.3;background:var(--red-bg)}
 tbody tr.rej td{text-decoration:line-through}
-td{padding:.5rem .8rem;vertical-align:middle}
+td{padding:.7rem .9rem;vertical-align:middle}
 .pw{position:relative}
-.pi{font-family:monospace;font-weight:700;font-size:.78rem;background:var(--bg);border:1.5px solid var(--bor2);border-radius:6px;padding:.32rem .5rem;width:142px;outline:none;transition:all .15s;color:var(--ink)}
+.pi{font-family:monospace;font-weight:700;font-size:.78rem;background:var(--bg);border:1.5px solid var(--bor2);border-radius:6px;padding:.32rem .5rem;width:155px;outline:none;transition:all .15s;color:var(--ink)}
 .pi:focus{border-color:var(--blue);background:var(--blue-bg)}
 .pi.ok{border-color:var(--teal);background:var(--teal-bg);color:var(--teal)}
 .pi.warn{border-color:var(--yel);background:var(--yel-bg);color:var(--yel)}
@@ -118,6 +118,17 @@ td{padding:.5rem .8rem;vertical-align:middle}
 .b-ok{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-bd)}
 .b-med{background:var(--yel-bg);color:var(--yel);border:1px solid rgba(245,158,11,.3)}
 .b-low{background:var(--red-bg);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+/* STOCK DOT */
+.sdot{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;font-weight:700}
+.sdot .d{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sdot.ok .d{background:#16a34a;box-shadow:0 0 5px rgba(22,163,74,.5)}
+.sdot.ok{color:#16a34a}
+.sdot.warn .d{background:#d97706;box-shadow:0 0 5px rgba(217,119,6,.4)}
+.sdot.warn{color:#d97706}
+.sdot.bad .d{background:#dc2626;box-shadow:0 0 5px rgba(220,38,38,.4)}
+.sdot.bad{color:#dc2626}
+.sdot.loading .d{background:#9ca3af;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .qi{width:58px;text-align:right;font-weight:700;background:var(--bg);border:1.5px solid var(--bor2);border-radius:6px;padding:.28rem .45rem;font-family:'Figtree',sans-serif;font-size:.84rem;color:var(--ink);outline:none}
 .qi:focus{border-color:var(--teal)}
 .ra{background:none;border:1px solid var(--bor2);border-radius:5px;padding:2px 7px;font-size:.68rem;font-family:'Figtree',sans-serif;cursor:pointer;transition:all .15s;color:var(--ink3);font-weight:700}
@@ -269,7 +280,7 @@ input[type=file]{display:none}
     </div>
     <div class="tscroll">
       <table>
-        <thead><tr><th>#</th><th>Código</th><th>Producto</th><th>Cant.</th><th>Conf.</th><th></th></tr></thead>
+        <thead><tr><th>#</th><th>Código</th><th>Producto</th><th>Cant.</th><th>Stock</th><th></th></tr></thead>
         <tbody id="tBody"></tbody>
       </table>
     </div>
@@ -627,6 +638,38 @@ function showReview() {
   setStep(3);
   renderTable();
   renderSummary();
+  loadStock();
+}
+
+// ── STOCK ─────────────────────────────────────────────────────
+let stockData = {}; // { "CS-F91W1U": 47, ... }
+
+async function loadStock() {
+  const codes = [...new Set(rows.filter(r => r.codigo).map(r => r.codigo))];
+  if (!codes.length) return;
+  try {
+    const data = await fetchJ(PROXY + '/stock?codes=' + encodeURIComponent(codes.join(',')));
+    if (data.ok) {
+      stockData = data.stock;
+      // Update all stock dots
+      rows.forEach((r, i) => updateStockDot(i));
+    }
+  } catch(e) { console.log('Stock error:', e); }
+}
+
+function stockDot(r) {
+  if (!r.codigo) return '';
+  const qty = parseFloat(r.cantidad) || 1;
+  const stk = stockData[r.codigo];
+  if (stk === undefined) return '<span class="sdot loading"><span class="d"></span></span>';
+  if (stk <= 0)         return `<span class="sdot bad"><span class="d"></span>${stk}</span>`;
+  if (stk < qty)        return `<span class="sdot warn"><span class="d"></span>${stk}</span>`;
+  return                        `<span class="sdot ok"><span class="d"></span>${stk}</span>`;
+}
+
+function updateStockDot(i) {
+  const el = document.getElementById('sd' + i);
+  if (el) el.innerHTML = stockDot(rows[i]);
 }
 
 function renderTable() {
@@ -636,7 +679,6 @@ function renderTable() {
     const tr = document.createElement('tr');
     tr.id = 'tr' + i;
     if (r.rejected) tr.classList.add('rej');
-    const cb = { high: '<span class="badge b-ok">✓ Alta</span>', medium: '<span class="badge b-med">~ Media</span>', low: '<span class="badge b-low">✗ Baja</span>' }[r.confidence] || '';
     tr.innerHTML = `
       <td style="color:var(--ink3);font-size:.73rem;font-weight:700">${i+1}</td>
       <td><div class="pw">
@@ -646,8 +688,8 @@ function renderTable() {
       </div></td>
       <td style="color:var(--ink2);font-size:.79rem;max-width:195px" id="pn${i}">${esc(r.nombre_producto||'')}</td>
       <td><input class="qi" type="number" min="0.01" step="any" value="${r.cantidad||1}"
-           onchange="rows[${i}].cantidad=parseFloat(this.value)||1;renderSummary()"></td>
-      <td>${cb}${r.nota_ia ? `<br><span style="font-size:.65rem;color:var(--ink3)">${esc(r.nota_ia)}</span>` : ''}</td>
+           onchange="rows[${i}].cantidad=parseFloat(this.value)||1;updateStockDot(${i});renderSummary()"></td>
+      <td id="sd${i}">${stockDot(r)}</td>
       <td>${r.rejected
         ? `<button class="ra res" onclick="restoreRow(${i})">↩</button>`
         : `<button class="ra del" onclick="rejectRow(${i})">✕</button>`
@@ -699,7 +741,6 @@ function onPi(i, inp) {
 }
 
 function pickProd(i, code, name) {
-  // Save correction if original was different
   const orig = rows[i].origCode || '';
   if (orig && orig !== code) saveCorrection(orig, code);
 
@@ -709,6 +750,10 @@ function pickProd(i, code, name) {
   if (inp) { inp.value = code; inp.className = 'pi ok'; }
   document.getElementById('pn' + i).textContent = name;
   closePDD(i); renderSummary();
+  // Fetch stock for new code
+  fetchJ(PROXY + '/stock?codes=' + encodeURIComponent(code)).then(d => {
+    if (d.ok) { Object.assign(stockData, d.stock); updateStockDot(i); }
+  }).catch(()=>{});
 }
 
 function closePDD(i) { document.getElementById('pd' + i)?.classList.remove('open'); }
