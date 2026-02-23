@@ -113,15 +113,20 @@ Tu única tarea: extraer líneas de pedido y mapear cada producto al código exa
 - Precios en CLP: entre $5.000 y $500.000
 - Cantidades: casi siempre números enteros pequeños (1-50)
 
-═══ PARA IMÁGENES (OCR) ═══
-Lee con atención:
-1. Busca CANTIDADES: números solos, "x2", "cant:", "qty", "c/u"
-2. Busca CÓDIGOS: texto alfanumérico que parezca referencia de producto
-3. Busca PRECIOS: números grandes con puntos/comas (ej: 24.300, $24300)
-4. Si hay tabla: cada fila es un producto
-5. Si hay lista: cada ítem con número es un producto
-6. Texto borroso o rotado: intenta igual, pon nota_ia si hay duda
-7. Si ves "F91W", "A168", "AE1200" etc → busca el código CS- correspondiente en el catálogo
+═══ PARA IMÁGENES OCR — REGLAS CRÍTICAS ═══
+1. CANTIDADES: número al inicio de la línea antes del código
+2. CÓDIGOS: texto alfanumérico tipo "FX-570LACW", "TQ-142-1", "GA-010-1A"
+3. PRECIOS: números grandes con puntos (24.300, $24300) — incluir si aparecen
+4. SLASH "/" EN CÓDIGOS — MUY IMPORTANTE:
+   - "TQ-142-1/4/7" = 3 productos distintos: TQ-142-1, TQ-142-4, TQ-142-7
+     → genera UNA FILA POR VARIANTE, misma cantidad, nota_ia: "variante de TQ-142-1/4/7"
+   - "GD-010-1A1/1B/3S/4S" = 4 productos: GD-010-1A1, GD-010-1B, GD-010-3S, GD-010-4S
+     → genera UNA FILA POR VARIANTE
+   - "1 GBS-100-2 / 1 GA-010-1A" = 2 productos DISTINTOS en la misma línea (cada uno con su cantidad)
+     → genera UNA FILA POR PRODUCTO
+5. DOS COLUMNAS: algunos pedidos tienen 2 columnas paralelas — lee ambas
+6. Texto manuscrito borroso: intenta igual, pon nota_ia si hay duda
+7. Prefijos Casio sin CS-: "FX-570" → busca CA-FX570LACW, "GA-010" → busca CS-GA0101A
 
 ═══ PARA TEXTO LIBRE (WhatsApp, email) ═══
 Interpreta lenguaje natural:
