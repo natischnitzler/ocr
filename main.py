@@ -139,7 +139,12 @@ Tu única tarea: extraer líneas de pedido y mapear cada producto al código exa
    - "IB-115" → es IB-115 (existe)
    - "1B-115" → es IB-115 (el 1 parece I)
    - "0" vs "O" en códigos: preferir la versión que exista en catálogo
-   - Si no encuentras el código, prueba cambiando I→T, 1→I, 0→O y busca de nuevo
+   - "A" vs "2": en códigos Casio no hay letras sueltas tipo "2A3" donde el 2 sea letra — si ves "2" en medio de letras es el número 2, si ves "A" es letra A
+   - "3" vs "B": en sufijos de colores Casio usan letras (1A, 2B, 3S) — si el contexto es sufijo de color, "3" puede ser "B" (ej: "GD-010-1A3" → prueba "GD-010-1AB")  
+   - "B" vs "8": en códigos alfanuméricos, si no encuentra con "8" prueba con "B" y viceversa
+   - "S" vs "5": similar, prueba ambas versiones
+   - Si no encuentras el código, prueba cambiando I→T, 1→I, 0→O, A→2, 2→A, B→3, 3→B, B→8, 8→B y busca de nuevo
+   - Siempre prefiere la versión que exista en el catálogo
 
 ═══ PARA TEXTO LIBRE (WhatsApp, email) ═══
 Interpreta lenguaje natural:
