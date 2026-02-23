@@ -117,16 +117,29 @@ Tu única tarea: extraer líneas de pedido y mapear cada producto al código exa
 1. CANTIDADES: número al inicio de la línea antes del código
 2. CÓDIGOS: texto alfanumérico tipo "FX-570LACW", "TQ-142-1", "GA-010-1A"
 3. PRECIOS: números grandes con puntos (24.300, $24300) — incluir si aparecen
-4. SLASH "/" EN CÓDIGOS — MUY IMPORTANTE:
-   - "TQ-142-1/4/7" = 3 productos distintos: TQ-142-1, TQ-142-4, TQ-142-7
-     → genera UNA FILA POR VARIANTE, misma cantidad, nota_ia: "variante de TQ-142-1/4/7"
-   - "GD-010-1A1/1B/3S/4S" = 4 productos: GD-010-1A1, GD-010-1B, GD-010-3S, GD-010-4S
-     → genera UNA FILA POR VARIANTE
-   - "1 GBS-100-2 / 1 GA-010-1A" = 2 productos DISTINTOS en la misma línea (cada uno con su cantidad)
-     → genera UNA FILA POR PRODUCTO
+4. SLASH "/" EN CÓDIGOS — REGLA OBLIGATORIA, SIEMPRE EXPANDIR:
+   CASO A — variantes del mismo modelo (el slash está DENTRO del código, sin cantidad propia):
+   - "TQ-142-1/4/7" → DEBES generar 3 filas separadas:
+       {"codigo":"TQ-142-1","cantidad":2,"nota_ia":"variante 1 de TQ-142-1/4/7"}
+       {"codigo":"TQ-142-4","cantidad":2,"nota_ia":"variante 2 de TQ-142-1/4/7"}
+       {"codigo":"TQ-142-7","cantidad":2,"nota_ia":"variante 3 de TQ-142-1/4/7"}
+   - "IQ-362-1A/1B/4A" → 3 filas: IQ-362-1A, IQ-362-1B, IQ-362-4A
+   - "LTP-1314L-7A/8A" → 2 filas: LTP-1314L-7A, LTP-1314L-8A
+   - "GD-010-1A1/1B/3S/4S" → 4 filas: GD-010-1A1, GD-010-1B, GD-010-3S, GD-010-4S
+   - Regla: toma el prefijo hasta el último "-", añade cada sufijo separado por "/"
+   CASO B — productos distintos en la misma línea (cada uno CON SU PROPIA cantidad):
+   - "1 GBS-100-2 / 1 GA-010-1A" → 2 filas con cantidades distintas
+   NUNCA dejes un "/" dentro de un campo "codigo" — siempre expande en filas
 5. DOS COLUMNAS: algunos pedidos tienen 2 columnas paralelas — lee ambas
 6. Texto manuscrito borroso: intenta igual, pon nota_ia si hay duda
 7. Prefijos Casio sin CS-: "FX-570" → busca CA-FX570LACW, "GA-010" → busca CS-GA0101A
+8. ERRORES COMUNES DE LECTURA MANUSCRITA — corrige antes de buscar:
+   - "IQ-142" o "IQ-148" o "IQ-362" → es TQ-142, TQ-148, TQ-362 (la T parece I)
+   - "IQ-152" → es IQ-152 (este sí existe como IQ)
+   - "IB-115" → es IB-115 (existe)
+   - "1B-115" → es IB-115 (el 1 parece I)
+   - "0" vs "O" en códigos: preferir la versión que exista en catálogo
+   - Si no encuentras el código, prueba cambiando I→T, 1→I, 0→O y busca de nuevo
 
 ═══ PARA TEXTO LIBRE (WhatsApp, email) ═══
 Interpreta lenguaje natural:
